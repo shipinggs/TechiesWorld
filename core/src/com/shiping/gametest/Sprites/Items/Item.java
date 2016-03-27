@@ -24,7 +24,7 @@ public abstract class Item extends Sprite {
         this.screen = screen;
         this.world = screen.getWorld();
         setPosition(x, y);
-        setBounds(getX(), getY(), 16 / TechiesWorld.PPM, 16 / TechiesWorld.PPM);
+        setBounds(getX(), getY(), 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
         defineItem();
         toDestroy = false;
         destroyed = false;

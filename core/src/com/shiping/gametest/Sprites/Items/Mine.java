@@ -1,5 +1,7 @@
 package com.shiping.gametest.Sprites.Items;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -12,9 +14,13 @@ import com.shiping.gametest.Sprites.Player;
  * Created by shiping on 2/3/16.
  */
 public class Mine extends Item {
+
+    private enum State { PLACED, TRANSITION, ARMED, HIDDEN }
+
     public Mine(PlayScreen screen, float x, float y) {
         super(screen, x, y);
-        setRegion(screen.getAtlas().findRegion("mushroom"), 0, 0, 16, 16);
+        setRegion(new TextureRegion(new Texture("PNGPack.png")), 140, 0, 70, 70);
+//        setRegion(screen.getAtlas().findRegion("mushroom"), 0, 0, 16, 16);
         velocity = new Vector2(screen.getPlayer().b2body.getLinearVelocity().x * 3, screen.getPlayer().b2body.getLinearVelocity().y * 3);
         
     }
@@ -29,7 +35,7 @@ public class Mine extends Item {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(6 / TechiesWorld.PPM);
+        shape.setRadius(32 / TechiesWorld.PPM);
         fdef.filter.categoryBits = TechiesWorld.MINE_BIT;
         fdef.filter.maskBits = TechiesWorld.MINE_BIT |
                 TechiesWorld.WALL_BIT |

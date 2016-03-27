@@ -54,6 +54,13 @@ public class Hud implements Disposable {
         minesLabel = new Label("MINES", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
         playerLabel = new Label("PLAYER", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
 
+        countDownLabel.setFontScale(3f);
+        minesLeftLabel.setFontScale(3f);
+        scoreLabel.setFontScale(3f);
+        timeLabel.setFontScale(3f);
+        minesLabel.setFontScale(3f);
+        playerLabel.setFontScale(3f);
+
         table.add(playerLabel).expandX().padTop(10);
         table.add(minesLabel).expandX().padTop(10);
         table.add(timeLabel).expandX().padTop(10);

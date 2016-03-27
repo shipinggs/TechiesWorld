@@ -71,7 +71,7 @@ public class PlayScreen implements Screen {
         hud = new Hud(game.batch);
 
         mapLoader = new TmxMapLoader();
-        map = mapLoader.load("testmap.tmx");
+        map = mapLoader.load("mapSample.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, 1 / TechiesWorld.PPM);
 
         // Set initial gamecam position to be centered correctly
@@ -84,7 +84,7 @@ public class PlayScreen implements Screen {
 
         creator = new B2WorldCreator(world, map);
 
-        player = new Player(world);
+        player = new Player(this);
 
         world.setContactListener(new WorldContactListener());
 
@@ -143,6 +143,7 @@ public class PlayScreen implements Screen {
 
         world.step(1/60f, 6, 2);
 
+        player.update(dt);
         for (Item item: items) {
             item.update(dt);
         }
@@ -176,6 +177,10 @@ public class PlayScreen implements Screen {
         See Part 10 */
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
+
+        // draw player sprites
+        player.draw(game.batch);
+
         for (Item item: items) {
             item.draw(game.batch);
         }

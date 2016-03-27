@@ -5,9 +5,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.shiping.gametest.Screens.PlayScreen;
 
 public class TechiesWorld extends Game {
-	public static final int V_WIDTH = 400;
-	public static final int V_HEIGHT = 208;
-	public static final float PPM = 100;
+	public static final int V_WIDTH = 1200;
+	public static final int V_HEIGHT = 624;
+	public static final float PPM = 500;
 
 	public static final short NOTHING_BIT = 0;
 	public static final short WALL_BIT = 1;
