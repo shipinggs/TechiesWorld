@@ -58,7 +58,6 @@ public class Player extends Sprite {
             frames.add(new TextureRegion(new Texture("PNGPack.png"), i * 64, 134, 64, 64));
         }
         playerAlive = new Animation(0.2f, frames);
-//        this.setRotation(180);
         frames.clear();
 
         definePlayer();
