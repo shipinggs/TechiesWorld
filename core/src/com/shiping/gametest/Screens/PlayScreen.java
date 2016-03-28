@@ -103,7 +103,7 @@ public class PlayScreen implements Screen {
             if (idef.type == Mine.class) {
                 items.add(new Mine(this, idef.position.x, idef.position.y));
             } else if (idef.type == Coin.class) {
-                items.add(new Coin(this, idef.position.x, idef.position.y));
+                items.add(new Coin(this, idef.position.x, idef.position.y, player));
             }
 
         }
@@ -133,7 +133,7 @@ public class PlayScreen implements Screen {
             player.b2body.applyForce(new Vector2(60f, 0), player.b2body.getWorldCenter(), true);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Coin.class));
+            spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
         }
 
     }

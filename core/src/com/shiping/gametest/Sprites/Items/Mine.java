@@ -1,11 +1,13 @@
 package com.shiping.gametest.Sprites.Items;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.TechiesWorld;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Player;
@@ -19,13 +21,33 @@ public class Mine extends Item {
     private State currentState;
     private State previousState;
 
+    private TextureRegion placedTexture;
+    private TextureRegion transitionTexture;
+    private TextureRegion armedTexture;
+    private Animation explosion;
+
     public Mine(PlayScreen screen, float x, float y) {
         super(screen, x, y);
-        setRegion(new TextureRegion(new Texture("PNGPack.png")), 140, 0, 70, 70);
-//        setRegion(screen.getAtlas().findRegion("mushroom"), 0, 0, 16, 16);
-//        velocity = new Vector2(screen.getPlayer().b2body.getLinearVelocity().x * 3, screen.getPlayer().b2body.getLinearVelocity().y * 3);
-        
+
+        Texture texture = new Texture("PNGPack.png");
+        placedTexture = new TextureRegion((texture), 0, 0, 70, 70);
+        transitionTexture = new TextureRegion((texture), 70, 0, 70, 70);
+        armedTexture = new TextureRegion((texture), 140, 0, 70, 70);
+
+        Array<TextureRegion> frames = new Array<TextureRegion>();
+
+        // get explosion animation frames and add to explosion Animation
+        for (int i = 0; i < 5; i++) {
+            frames.add(new TextureRegion(new Texture("explode(64x64).png"), i*64, 0, 64, 64));
+        }
+        explosion = new Animation(0.1f, frames);
+
+        // clear frames
+        frames.clear();
+
+        setRegion(placedTexture);
     }
+
 
     public State getState() {
         return currentState;

@@ -13,9 +13,14 @@ import com.shiping.gametest.TechiesWorld;
  * Created by shiping on 28/3/16.
  */
 public class Coin extends Item {
-    public Coin(PlayScreen screen, float x, float y) {
+    private int amount;
+
+    public Coin(PlayScreen screen, float x, float y, Player player) {
         super(screen, x, y);
         setRegion(new TextureRegion(new Texture("PNGPack.png")), 0, 70, 64, 64);
+        if (player.getScore() / 3 < 200) {
+            amount = 200;
+        } else amount = player.getScore() / 3;
     }
 
     @Override
@@ -36,9 +41,14 @@ public class Coin extends Item {
         body.createFixture(fdef).setUserData(this);
     }
 
+    public int getAmount() {
+        return amount;
+    }
+
     @Override
     public void contact(Player player) {
         destroy();
+        player.addScore(this);
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.Screens.PlayScreen;
+import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.Item;
 import com.shiping.gametest.Sprites.Items.Mine;
 import com.shiping.gametest.TechiesWorld;
@@ -20,6 +21,8 @@ import com.shiping.gametest.TechiesWorld;
  */
 public class Player extends Sprite {
     private int playerID;
+    private int score;
+    private int minesLeft;
 
     private enum State { ALIVE, GROWING, DEAD }
     private enum Direction { TOP, TOPRIGHT, RIGHT, RIGHTBOTTOM, BOTTOM, BOTTOMLEFT, LEFT, LEFTTOP }
@@ -57,7 +60,7 @@ public class Player extends Sprite {
         Array<TextureRegion> frames = new Array<TextureRegion>();
 
         // get run animation frames and add them to playerAlive Animation
-        for (int i = 1; i < 6; i++) {
+        for (int i = 0; i < 6; i++) {
             frames.add(new TextureRegion(texturePack, i * 64, 134, 64, 64));
         }
         playerAlive = new Animation(0.2f, frames);
@@ -66,7 +69,7 @@ public class Player extends Sprite {
         frames.clear();
 
         // get dying animation frames and add them to playerDead Animation
-        for (int i = 1; i < 6; i++) {
+        for (int i = 0; i < 6; i++) {
             frames.add(new TextureRegion(texturePack, i * 64, 198, 64, 64));
         }
         playerDead = new Animation (0.1f, frames);
@@ -111,25 +114,24 @@ public class Player extends Sprite {
                 break;
         }
 
-//        if ((b2body.getLinearVelocity().x < 0 || !runningRight) && !region.isFlipX()) { // isFlipX() returns true if the region is flipped from its original
-//            region.flip(true, false);
-//            runningRight = false;
-//        }
-//        else if ((b2body.getLinearVelocity().x > 0 || runningRight) && region.isFlipX()) {
-//            region.flip(true, false);
-//            runningRight = true;
-//        }
-
         stateTimer = currentState == previousState? stateTimer + dt : 0;
         previousState = currentState;
         return region;
     }
 
 
-    public State getState () {
+    public State getState() {
         if (playerIsDead) return State.DEAD;
         else if (runGrowAnimation) return State.GROWING;
         else return State.ALIVE;
+    }
+
+    public void addScore(Coin coin) {
+        score += coin.getAmount();
+    }
+
+    public int getScore() {
+        return score;
     }
 
     public void definePlayer() {
