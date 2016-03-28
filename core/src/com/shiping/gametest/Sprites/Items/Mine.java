@@ -15,16 +15,21 @@ import com.shiping.gametest.Sprites.Player;
  */
 public class Mine extends Item {
 
-    private enum State { PLACED, TRANSITION, ARMED, HIDDEN }
+    public enum State { PLACED, TRANSITION, ARMED, HIDDEN }
+    private State currentState;
+    private State previousState;
 
     public Mine(PlayScreen screen, float x, float y) {
         super(screen, x, y);
         setRegion(new TextureRegion(new Texture("PNGPack.png")), 140, 0, 70, 70);
 //        setRegion(screen.getAtlas().findRegion("mushroom"), 0, 0, 16, 16);
-        velocity = new Vector2(screen.getPlayer().b2body.getLinearVelocity().x * 3, screen.getPlayer().b2body.getLinearVelocity().y * 3);
+//        velocity = new Vector2(screen.getPlayer().b2body.getLinearVelocity().x * 3, screen.getPlayer().b2body.getLinearVelocity().y * 3);
         
     }
 
+    public State getState() {
+        return currentState;
+    }
 
     @Override
     public void defineItem() {
@@ -53,9 +58,9 @@ public class Mine extends Item {
     @Override
     public void update(float dt) {
         super.update(dt);
+        // update sprite to correspond with position of b2body
         setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
-//        velocity.y = body.getLinearVelocity().y;
-        body.setLinearVelocity(velocity);
+//        body.setLinearVelocity(velocity);
 
     }
 }

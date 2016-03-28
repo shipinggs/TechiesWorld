@@ -10,8 +10,9 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
-import com.shiping.gametest.Scenes.Hud;
 import com.shiping.gametest.Screens.PlayScreen;
+import com.shiping.gametest.Sprites.Items.Item;
+import com.shiping.gametest.Sprites.Items.Mine;
 import com.shiping.gametest.TechiesWorld;
 
 /**
@@ -30,7 +31,7 @@ public class Player extends Sprite {
     public Body b2body;
 
     private Animation playerAlive;
-    private TextureRegion playerDead;
+    private Animation playerDead;
     private Animation beastAlive;
     private Animation growPlayer;
 
@@ -40,6 +41,8 @@ public class Player extends Sprite {
     private boolean timeToDefineBeastPlayer;
     private boolean timeToRedefinePlayer;
     private boolean playerIsDead;
+
+    private Texture texturePack = new Texture("PNGPack.png");
 
 
     public Player(PlayScreen screen) {
@@ -53,17 +56,29 @@ public class Player extends Sprite {
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
 
-        // get run animation frames and add them to marioRun Animation
+        // get run animation frames and add them to playerAlive Animation
         for (int i = 1; i < 6; i++) {
-            frames.add(new TextureRegion(new Texture("PNGPack.png"), i * 64, 134, 64, 64));
+            frames.add(new TextureRegion(texturePack, i * 64, 134, 64, 64));
         }
         playerAlive = new Animation(0.2f, frames);
+
+        // clear frames for next animation sequence
         frames.clear();
+
+        // get dying animation frames and add them to playerDead Animation
+        for (int i = 1; i < 6; i++) {
+            frames.add(new TextureRegion(texturePack, i * 64, 198, 64, 64));
+        }
+        playerDead = new Animation (0.1f, frames);
+
+        // clear frames for next animation sequence
+        frames.clear();
+
 
         definePlayer();
 
         setBounds(100, 0, 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
-
+        setRegion(playerAlive.getKeyFrame(stateTimer, true));
     }
 
     public void update(float dt) {
@@ -78,11 +93,11 @@ public class Player extends Sprite {
 
     public TextureRegion getFrame (float dt) {
         currentState = getState();
-
+        System.out.println(currentState);
         TextureRegion region;
         switch (currentState) {
             case DEAD:
-                region = playerDead;
+                region = playerDead.getKeyFrame(stateTimer, true);
                 break;
             case GROWING:
                 region = growPlayer.getKeyFrame(stateTimer);
@@ -92,7 +107,6 @@ public class Player extends Sprite {
                 break;
             case ALIVE:
             default:
-                System.out.println("alive");
                 region = playerIsGrown ?  beastAlive.getKeyFrame(stateTimer, true) : playerAlive.getKeyFrame(stateTimer, true);
                 break;
         }
@@ -110,6 +124,7 @@ public class Player extends Sprite {
         previousState = currentState;
         return region;
     }
+
 
     public State getState () {
         if (playerIsDead) return State.DEAD;

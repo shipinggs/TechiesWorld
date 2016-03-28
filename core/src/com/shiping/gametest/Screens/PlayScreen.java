@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.TechiesWorld;
 import com.shiping.gametest.Scenes.Hud;
 
@@ -101,7 +102,10 @@ public class PlayScreen implements Screen {
             ItemDef idef = itemsToSpawn.poll(); // like a pop for a queue
             if (idef.type == Mine.class) {
                 items.add(new Mine(this, idef.position.x, idef.position.y));
+            } else if (idef.type == Coin.class) {
+                items.add(new Coin(this, idef.position.x, idef.position.y));
             }
+
         }
     }
 
@@ -129,7 +133,7 @@ public class PlayScreen implements Screen {
             player.b2body.applyForce(new Vector2(60f, 0), player.b2body.getWorldCenter(), true);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
+            spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Coin.class));
         }
 
     }
