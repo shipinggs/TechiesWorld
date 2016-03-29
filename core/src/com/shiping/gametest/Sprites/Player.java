@@ -91,6 +91,11 @@ public class Player extends Sprite {
         } else {
             setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         }
+
+        if (playerIsDead && previousState == State.DEAD && stateTimer > 2) {
+            playerIsDead = false;
+            currentState = State.ALIVE;
+        }
         setRegion(getFrame(dt));
     }
 
@@ -132,6 +137,10 @@ public class Player extends Sprite {
 
     public int getScore() {
         return score;
+    }
+
+    public void setPlayerDead() {
+        playerIsDead = true;
     }
 
     public void definePlayer() {
