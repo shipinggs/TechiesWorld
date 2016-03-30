@@ -1,10 +1,12 @@
 package com.shiping.gametest.Sprites.Items;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.TechiesWorld;
@@ -14,10 +16,21 @@ import com.shiping.gametest.TechiesWorld;
  */
 public class Coin extends Item {
     private int amount;
+    private Animation textureAnimation;
+    private float stateTimer;
 
     public Coin(PlayScreen screen, float x, float y, Player player) {
         super(screen, x, y);
-        setRegion(new TextureRegion(new Texture("PNGPack.png")), 0, 70, 64, 64);
+
+        Array<TextureRegion> frames = new Array<TextureRegion>();
+
+        for (int i = 0; i < 6; i++) {
+            frames.add(new TextureRegion(new Texture("PNGPack.png"), i*64, 70, 64, 64 ));
+        }
+
+        textureAnimation = new Animation(0.1f, frames);
+        setRegion(textureAnimation.getKeyFrame(0.1f));
+        // to do ANIMATION
         if (player.getScore() / 3 < 200) {
             amount = 200;
         } else amount = player.getScore() / 3;

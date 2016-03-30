@@ -130,7 +130,7 @@ public class Mine extends Item {
         } else if (currentState == State.TRANSITION && stateTime > 2) {
             currentState = State.ARMED;
             defineItem();
-        } else if (currentState == State.EXPLODING & stateTime > 1) {
+        } else if (currentState == State.EXPLODING & stateTime > 0.5) {
             destroy();
         }
         // update sprite to correspond with position of b2body

@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.Item;
+import com.shiping.gametest.Sprites.Items.ItemDef;
 import com.shiping.gametest.Sprites.Items.Mine;
 import com.shiping.gametest.TechiesWorld;
 
@@ -31,6 +33,7 @@ public class Player extends Sprite {
     private Direction currentDirection;
     private Direction previousDirection;
     private World world;
+    private PlayScreen screen;
     public Body b2body;
 
     private Animation playerAlive;
@@ -50,10 +53,14 @@ public class Player extends Sprite {
 
     public Player(PlayScreen screen) {
         this.world = screen.getWorld();
+        this.screen = screen;
         currentState = State.ALIVE;
         previousState = State.ALIVE;
         currentDirection = Direction.BOTTOM;
         previousDirection = Direction.BOTTOM;
+
+        score = 500;
+        minesLeft = 3;
 
         stateTimer = 0;
 
@@ -92,9 +99,12 @@ public class Player extends Sprite {
             setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         }
 
-        if (playerIsDead && previousState == State.DEAD && stateTimer > 2) {
+        if (playerIsDead && previousState == State.DEAD && stateTimer > 0.6) {
             playerIsDead = false;
             currentState = State.ALIVE;
+            screen.spawnItem(new ItemDef(new Vector2(b2body.getPosition().x, b2body.getPosition().y), Coin.class));
+            world.destroyBody(b2body);
+            definePlayer();
         }
         setRegion(getFrame(dt));
     }
@@ -145,7 +155,7 @@ public class Player extends Sprite {
 
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
-        bdef.position.set(70 / TechiesWorld.PPM, 70 / TechiesWorld.PPM);
+        bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
