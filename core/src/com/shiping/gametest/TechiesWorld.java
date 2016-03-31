@@ -2,6 +2,7 @@ package com.shiping.gametest;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.shiping.gametest.Screens.LoginScreen;
 import com.shiping.gametest.Screens.PlayScreen;
 
 public class TechiesWorld extends Game {
@@ -22,7 +23,8 @@ public class TechiesWorld extends Game {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		setScreen(new PlayScreen(this));
+		//setScreen(new PlayScreen(this));
+		setScreen(new LoginScreen(this));
 	}
 
 	@Override

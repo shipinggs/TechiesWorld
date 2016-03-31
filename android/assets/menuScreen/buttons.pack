@@ -1,0 +1,26 @@
+
+buttons.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+button_start_game
+  rotate: false
+  xy: 1, 1
+  size: 134, 61
+  orig: 134, 61
+  offset: 0, 0
+  index: -1
+button_login
+  rotate: false
+  xy: 137, 17
+  size: 100, 45
+  orig: 100, 45
+  offset: 0, 0
+  index: -1
+button_logout
+  rotate: false
+  xy: 239, 17
+  size: 100, 45
+  orig: 100, 45
+  offset: 0, 0
+  index: -1

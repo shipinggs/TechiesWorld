@@ -1,6 +1,6 @@
 package com.shiping.gametest.Screens;
 
-import com.badlogic.gdx.Game;
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -16,26 +16,27 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.shiping.gametest.TechiesWorld;
+import com.badlogic.gdx.Game;
 
 /**
- * Created by G751-4314 on 31/3/2016.
+ * Created by ACER- on 31/3/2016.
  */
-public class LoginScreen implements Screen {
+public class MenuScreen implements Screen {
     private SpriteBatch batch;
-    private TechiesWorld game;
+    final TechiesWorld game;
     private OrthographicCamera camera;
-
     private Stage stage; //** stage holds the Button **//
-    private TextButton loginBtn;
+    private TextButton logoutBtn;
+    private TextButton startGameBtn;
     private Skin buttonSkin; //** images are used as skins of the button **//
-    private BitmapFont font;
+    private BitmapFont font; //** same as that used in Tut 7 **//
     private Texture calibriFontTexture;
     private TextureAtlas buttonsAtlas; //** Holds the entire image for all buttons **//
 
 
 
-    public LoginScreen(TechiesWorld game){
-        Gdx.app.log("Login Screen", "constructor called");
+    public MenuScreen(TechiesWorld game){
+        Gdx.app.log("Menu Screen", "constructor called");
         this.game = game; // ** get Game parameter **//
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 512, 512);
@@ -50,22 +51,28 @@ public class LoginScreen implements Screen {
         font = new BitmapFont(Gdx.files.internal("fonts/calibri_font.fnt"), new TextureRegion(calibriFontTexture), false);
         font.setColor(0,0,1,1); //** Blue text **//
 
-        //button
+        //buttons
         buttonsAtlas = new TextureAtlas("menuScreen/buttons.pack");
         buttonSkin = new Skin();
         buttonSkin.addRegions(buttonsAtlas);
-        TextButton.TextButtonStyle styleLogin = new TextButton.TextButtonStyle(); //** Button properties **//
-        styleLogin.up = buttonSkin.getDrawable("button_login");
-        styleLogin.down = buttonSkin.getDrawable("button_login");
-        styleLogin.font = font;
-        loginBtn = new TextButton("",styleLogin); //empty string since text is already on button
-        loginBtn.setPosition(100, 20); //** Button location **//
-        loginBtn.setHeight(200); //** Button Height **//
-        loginBtn.setWidth(400); //** Button Width **//
-    }
 
-    public void login(){
-        //To do: login to user's google account
+        TextButton.TextButtonStyle styleLogout = new TextButton.TextButtonStyle(); //** Button properties **//
+        styleLogout.up = buttonSkin.getDrawable("button_logout");
+        styleLogout.down = buttonSkin.getDrawable("button_logout");
+        styleLogout.font = font;
+        logoutBtn = new TextButton("",styleLogout); //empty string since text is already on button
+        logoutBtn.setPosition(100, 20); //** Button location **//
+        logoutBtn.setHeight(200); //** Button Height **//
+        logoutBtn.setWidth(400); //** Button Width **//
+
+        TextButton.TextButtonStyle styleStartGame = new TextButton.TextButtonStyle(); //** Button properties **//
+        styleStartGame.up = buttonSkin.getDrawable("button_start_game");
+        styleStartGame.down = buttonSkin.getDrawable("button_start_game");
+        styleStartGame.font = font;
+        startGameBtn = new TextButton("",styleStartGame); //empty string since text is already on button
+        startGameBtn.setPosition(100, 250); //** Button location **//
+        startGameBtn.setHeight(200); //** Button Height **//
+        startGameBtn.setWidth(400); //** Button Width **//
 
     }
 
@@ -75,10 +82,10 @@ public class LoginScreen implements Screen {
      */
     @Override
     public void show() {
-        loginBtn.addListener(new InputListener() {
+        logoutBtn.addListener(new InputListener() {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 /*
-                THINGS TO DO WHEN LOGIN BUTTON IS PRESSED
+                THINGS TO DO WHEN LOGOUT BUTTON IS PRESSED
                  */
                 Gdx.app.log("Logout button", "Pressed"); //** Usually used to start Game, etc. **//
                 return true;
@@ -86,14 +93,34 @@ public class LoginScreen implements Screen {
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 /*
-                THINGS TO DO WHEN LOGIN BUTTON IS RELEASED
+                THINGS TO DO WHEN LOGOUT BUTTON IS RELEASED
                  */
                 Gdx.app.log("Logout button", "Released");
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuScreen(game));
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new LoginScreen(game));
             }
         });
 
-        stage.addActor(loginBtn);
+        stage.addActor(logoutBtn);
+
+        startGameBtn.addListener(new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                /*
+                THINGS TO DO WHEN START GAME BUTTON IS PRESSED
+                 */
+                Gdx.app.log("Start Game button", "Pressed"); //** Usually used to start Game, etc. **//
+                return true;
+            }
+
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                /*
+                THINGS TO DO WHEN START GAME BUTTON IS RELEASED
+                 */
+                Gdx.app.log("Start Game", "Released");
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayScreen(game));
+            }
+        });
+
+        stage.addActor(startGameBtn);
 
     }
 
@@ -104,7 +131,7 @@ public class LoginScreen implements Screen {
      */
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 99, 1); // rgba. clear screen with blue
+        Gdx.gl.glClearColor(0, 99, 0, 1); // rgba. clear screen with green
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 
         stage.act();
@@ -114,12 +141,14 @@ public class LoginScreen implements Screen {
         stage.draw();
         batch.end();
 
+
+
     }
 
     /**
      * @param width
      * @param height
-     * @see //ApplicationListener#resize(int, int)
+     * @see ApplicationListener#resize(int, int)
      */
     @Override
     public void resize(int width, int height) {
@@ -127,7 +156,7 @@ public class LoginScreen implements Screen {
     }
 
     /**
-     * @see //ApplicationListener#pause()
+     * @see ApplicationListener#pause()
      */
     @Override
     public void pause() {
@@ -135,7 +164,7 @@ public class LoginScreen implements Screen {
     }
 
     /**
-     * @see //ApplicationListener#resume()
+     * @see ApplicationListener#resume()
      */
     @Override
     public void resume() {
