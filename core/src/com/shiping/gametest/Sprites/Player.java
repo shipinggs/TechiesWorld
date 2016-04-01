@@ -153,6 +153,10 @@ public class Player extends Sprite {
         playerIsDead = true;
     }
 
+    public boolean isPlayerDead() {
+        return playerIsDead;
+    }
+
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
         bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.shiping.gametest.Scenes.Controller;
 import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.TechiesWorld;
 import com.shiping.gametest.Scenes.Hud;
@@ -34,11 +36,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class PlayScreen implements Screen {
 
     private TechiesWorld game;
-    private TextureAtlas atlas;
+//    private TextureAtlas atlas;
 
     private OrthographicCamera gamecam;
     private Viewport gamePort;
     private Hud hud;
+    private Controller controller;
 
     // Tiled map variables
     private TmxMapLoader mapLoader;
@@ -60,7 +63,7 @@ public class PlayScreen implements Screen {
 
 
     public PlayScreen(TechiesWorld game) {
-        atlas = new TextureAtlas("Mario_and_Enemies.pack");
+//        atlas = new TextureAtlas("Mario_and_Enemies.pack");
 
         this.game = game;
         // create cam used to follow player
@@ -70,6 +73,10 @@ public class PlayScreen implements Screen {
 
         // Heads-Up Display
         hud = new Hud(game.batch);
+
+        // Controller
+        controller = new Controller(game.batch);
+
 
         mapLoader = new TmxMapLoader();
         map = mapLoader.load("mapSample.tmx");
@@ -109,10 +116,6 @@ public class PlayScreen implements Screen {
         }
     }
 
-    public TextureAtlas getAtlas() {
-        return atlas;
-    }
-
 
     @Override
     public void show() {
@@ -120,20 +123,23 @@ public class PlayScreen implements Screen {
     }
 
     public void handleInput(float dt) {
-        if (Gdx.input.isKeyPressed(Input.Keys.UP) && player.b2body.getLinearVelocity().y <= 0.6) {
-            player.b2body.applyForce(new Vector2(0, 60f), player.b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN) && player.b2body.getLinearVelocity().y >= -0.6) {
-            player.b2body.applyForce(new Vector2(0, -60f), player.b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.b2body.getLinearVelocity().x >= -0.6) {
-            player.b2body.applyForce(new Vector2(-60f, 0), player.b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.b2body.getLinearVelocity().x <= 0.6) {
-            player.b2body.applyForce(new Vector2(60f, 0), player.b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
+        if (!player.isPlayerDead()) {
+            if (controller.isMinePressed()) {
+                spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
+            }
+
+            if (controller.isUpPressed() && player.b2body.getLinearVelocity().y <= 0.6) {
+                player.b2body.applyForce(new Vector2(0, 60f), player.b2body.getWorldCenter(), true);
+            }
+            if (controller.isDownPressed() && player.b2body.getLinearVelocity().y >= -0.6) {
+                player.b2body.applyForce(new Vector2(0, -60f), player.b2body.getWorldCenter(), true);
+            }
+            if (controller.isLeftPressed() && player.b2body.getLinearVelocity().x >= -0.6) {
+                player.b2body.applyForce(new Vector2(-60f, 0), player.b2body.getWorldCenter(), true);
+            }
+            if (controller.isRightPressed() && player.b2body.getLinearVelocity().x <= 0.6) {
+                player.b2body.applyForce(new Vector2(60f, 0), player.b2body.getWorldCenter(), true);
+            }
         }
 
     }
@@ -192,11 +198,13 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
+        controller.draw();
     }
 
     @Override
     public void resize(int width, int height) {
         gamePort.update(width, height);
+        controller.resize(width, height);
     }
 
     public TiledMap getMap() {
