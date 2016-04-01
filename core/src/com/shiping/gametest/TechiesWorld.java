@@ -20,6 +20,12 @@ public class TechiesWorld extends Game {
 
 	public SpriteBatch batch;
 
+	public static PlayServices playServices;
+
+	public TechiesWorld(PlayServices playServices){
+		this.playServices=playServices;
+	}
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();

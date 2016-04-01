@@ -87,6 +87,7 @@ public class MenuScreen implements Screen {
                 /*
                 THINGS TO DO WHEN LOGOUT BUTTON IS PRESSED
                  */
+                TechiesWorld.playServices.signOut();
                 Gdx.app.log("Logout button", "Pressed"); //** Usually used to start Game, etc. **//
                 return true;
             }

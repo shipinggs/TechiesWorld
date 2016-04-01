@@ -66,7 +66,7 @@ public class LoginScreen implements Screen {
 
     public void login(){
         //To do: login to user's google account
-
+        TechiesWorld.playServices.signIn();
     }
 
 
@@ -89,7 +89,9 @@ public class LoginScreen implements Screen {
                 THINGS TO DO WHEN LOGIN BUTTON IS RELEASED
                  */
                 Gdx.app.log("Logout button", "Released");
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuScreen(game));
+                if (TechiesWorld.playServices.isSignedIn()){
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuScreen(game));
+                }
             }
         });
 
