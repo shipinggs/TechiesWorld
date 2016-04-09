@@ -92,7 +92,13 @@ public class PlayScreen implements Screen {
         creator = new B2WorldCreator(world, map);
 
         player = new Player(this);
-        otherPlayer1 = new OtherPlayer(1);
+
+        while (TechiesWorld.playServices.getMyPosition()==-1){}
+        for (int i=0;i<2;i++){
+            if (i!=TechiesWorld.playServices.getMyPosition()){
+                otherPlayer1 = new OtherPlayer(i);
+            }
+        }
 
         // Heads-Up Display
         hud = new Hud(game.batch, player);

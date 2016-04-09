@@ -236,15 +236,13 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			playerPositions.put(id,position);
 		}else if (buf[0]=='S'){
 			int id=buf[1];
-			playerStatus.put(id, String.valueOf(buf[2]));
+			playerStatus.put(id, String.valueOf((char)buf[2]));
 		}else if (buf[0]=='c'){ //coin collected
 
 
 		}else if (buf[0]=='C'){ //coin spawned
 
 		}
-		String sender=realTimeMessage.getSenderParticipantId();
-		receivedPlayer=buf;
 	}
 
 	// Show error message about game being cancelled and return to main screen.
