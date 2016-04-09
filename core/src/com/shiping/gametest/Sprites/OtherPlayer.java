@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.TechiesWorld;
 
+import java.awt.font.TextHitInfo;
+
 /**
  * Created by shiping on 8/4/16.
  *
@@ -47,6 +49,25 @@ public class OtherPlayer extends Sprite {
         Array<TextureRegion> frames = new Array<TextureRegion>();
 
         switch (playerNumber) {
+            case 0:
+                // get run animation frames and add them to playerAlive Animation
+                for (int i = 0; i < 6; i++) {
+                    frames.add(new TextureRegion(texturePack, i * 64, 262, 64, 64));
+                }
+                playerAlive = new Animation(0.2f, frames);
+
+                // clear frames for next animation sequence
+                frames.clear();
+
+                // get dying animation frames and add them to playerDead Animation
+                for (int i = 0; i < 6; i++) {
+                    frames.add(new TextureRegion(texturePack, i * 64, 326, 64, 64));
+                }
+                playerDead = new Animation (0.1f, frames);
+
+                // clear frames for next animation sequence
+                frames.clear();
+                break;
             case 1:
                 // get run animation frames and add them to playerAlive Animation
                 for (int i = 0; i < 6; i++) {
@@ -77,8 +98,21 @@ public class OtherPlayer extends Sprite {
         /* TODO change setPosition to be fetched x,y values from AndroidLauncher
          * Can use TechiesWorld.playServices.getPlayerPosition(playerNumber);
          */
-        setPosition(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
-        setRegion(getFrame(dt));
+        if (TechiesWorld.playServices.getPlayerPosition(playerNumber)!=null){
+            int[] position=TechiesWorld.playServices.getPlayerPosition(playerNumber);
+            float x=position[0]*100+position[1]-30;
+            float y=position[2]*100+position[3]-30;
+            setPosition(x / TechiesWorld.PPM, y / TechiesWorld.PPM);
+            setRegion(getFrame(dt));
+        }
+        if (TechiesWorld.playServices.getPlayerStatus(playerNumber)!=null){
+            String status=TechiesWorld.playServices.getPlayerStatus(playerNumber);
+            if (status.equals("D")){
+                setPlayerDead(true);
+            }else if (status.equals("A")){
+                setPlayerDead(false);
+            }
+        }
     }
 
     public TextureRegion getFrame (float dt) {

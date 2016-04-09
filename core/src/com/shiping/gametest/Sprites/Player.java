@@ -105,6 +105,8 @@ public class Player extends Sprite {
             definePlayer();
         }
         setRegion(getFrame(dt));
+        TechiesWorld.playServices.broadcastMsg(sendPositionBuffer());
+        TechiesWorld.playServices.broadcastMsg(sendStatusBuffer());
     }
 
     public TextureRegion getFrame (float dt) {
@@ -193,5 +195,29 @@ public class Player extends Sprite {
 
         fdef.shape = shape;
         b2body.createFixture(fdef).setUserData(this); // fixture is within a body
+    }
+    public byte[] sendPositionBuffer(){
+        byte[] position=new byte[6];
+        position[0]=(byte)'P';
+        position[1]= (byte) TechiesWorld.playServices.getMyPosition();
+        int x= (int) (b2body.getPosition().x*TechiesWorld.PPM);
+        int y= (int) (b2body.getPosition().y*TechiesWorld.PPM);
+        position[2]= (byte) (x/100);
+        position[3]= (byte) (x%100);
+        position[4]= (byte) (y/100);
+        position[5]= (byte) (y%100);
+        return position;
+    }
+
+    public byte[] sendStatusBuffer(){
+        byte[] status=new byte[3];
+        status[0]=(byte)'S';
+        status[1]= (byte) TechiesWorld.playServices.getMyPosition();
+        if (playerIsDead){
+            status[2]=(byte)'D';
+        }else {
+            status[2]=(byte)'A';
+        }
+        return status;
     }
 }
