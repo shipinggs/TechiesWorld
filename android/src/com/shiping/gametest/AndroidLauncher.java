@@ -64,10 +64,14 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		GameHelper.GameHelperListener gameHelperListener = new GameHelper.GameHelperListener()
 		{
 			@Override
-			public void onSignInFailed(){}
+			public void onSignInFailed(){
+				Toast.makeText(getApplicationContext(), "sign in failed", Toast.LENGTH_SHORT).show();
+			}
 
 			@Override
-			public void onSignInSucceeded(){}
+			public void onSignInSucceeded(){
+				Toast.makeText(getApplicationContext(), "sign in succeeded", Toast.LENGTH_SHORT).show();
+			}
 		};
 
 		gameHelper.setup(gameHelperListener);
@@ -233,6 +237,11 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}else if (buf[0]=='S'){
 			int id=buf[1];
 			playerStatus.put(id, String.valueOf(buf[2]));
+		}else if (buf[0]=='c'){ //coin collected
+
+
+		}else if (buf[0]=='C'){ //coin spawned
+
 		}
 		String sender=realTimeMessage.getSenderParticipantId();
 		receivedPlayer=buf;
@@ -403,6 +412,28 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	public String getPlayerStatus(int id){
 		return playerStatus.get(id);
+	}
+
+	public void receiveCoinSpawnMsg(byte[] mMsgBuf){
+		//need to spawn coins created by other players
+		int coinX = mMsgBuf[1];
+		int coinY = mMsgBuf[2];
+		int amount = mMsgBuf[3];
+
+	}
+
+	public void receiveCoinCollectedMsg(byte[] mMsgBuf){
+		//need to remove coins collected by other players
+
+	}
+
+	public void sendCoinCollectedMsg(){
+		//need to get other devices to remove coins collected by this device's player
+
+	}
+
+	public void sendCoinSpawnedMsg(){
+		//need to get other devices to spawn coins created by this device
 	}
 
 
