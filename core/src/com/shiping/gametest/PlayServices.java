@@ -15,5 +15,8 @@ public interface PlayServices {
     public void startQuickGame();
     public boolean getAbleToStart();
     public void broadcastMsg(byte[] mMsgBuf);
-    public int getPositionY();
+    public void destroy();
+    public int getMyPosition();
+    public int[] getPlayerPosition(int id);
+    public String getPlayerStatus(int id);
 }

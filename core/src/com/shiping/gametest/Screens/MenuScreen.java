@@ -87,7 +87,7 @@ public class MenuScreen implements Screen {
                 /*
                 THINGS TO DO WHEN LOGOUT BUTTON IS PRESSED
                  */
-                TechiesWorld.playServices.signOut();
+                TechiesWorld.playServices.destroy();
                 Gdx.app.log("Logout button", "Pressed"); //** Usually used to start Game, etc. **//
                 return true;
             }
@@ -97,7 +97,6 @@ public class MenuScreen implements Screen {
                 THINGS TO DO WHEN LOGOUT BUTTON IS RELEASED
                  */
                 Gdx.app.log("Logout button", "Released");
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new LoginScreen(game));
             }
         });
 
@@ -108,6 +107,7 @@ public class MenuScreen implements Screen {
                 /*
                 THINGS TO DO WHEN START GAME BUTTON IS PRESSED
                  */
+                TechiesWorld.playServices.startQuickGame();
                 Gdx.app.log("Start Game button", "Pressed"); //** Usually used to start Game, etc. **//
                 return true;
             }
@@ -117,12 +117,19 @@ public class MenuScreen implements Screen {
                 THINGS TO DO WHEN START GAME BUTTON IS RELEASED
                  */
                 Gdx.app.log("Start Game", "Released");
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayScreen(game));
             }
         });
 
         stage.addActor(startGameBtn);
 
+    }
+
+    public void update(){
+        if (TechiesWorld.playServices.isSignedIn()){
+            if (TechiesWorld.playServices.getAbleToStart()){
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayScreen(game));
+            }
+        }
     }
 
     /**
@@ -132,6 +139,7 @@ public class MenuScreen implements Screen {
      */
     @Override
     public void render(float delta) {
+        update();
         Gdx.gl.glClearColor(0, 99, 0, 1); // rgba. clear screen with green
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 

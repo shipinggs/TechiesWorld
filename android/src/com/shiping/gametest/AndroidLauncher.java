@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -23,7 +24,9 @@ import com.google.example.games.basegameutils.BaseGameUtils;
 import com.google.example.games.basegameutils.GameHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		RealTimeMessageReceivedListener, RoomStatusUpdateListener, RoomUpdateListener{
@@ -44,7 +47,16 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	String mMyId=null;
 
-	int positionY=0;
+	Participant me=null;
+
+	int myPosition=-1;
+
+	Map<Integer,int[]> playerPositions=new HashMap<>();
+
+	Map<Integer, String> playerStatus=new HashMap<>();
+
+	public byte[] receivedPlayer;
+
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		gameHelper = new GameHelper(this, GameHelper.CLIENT_GAMES);
@@ -84,7 +96,11 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == RC_WAITING_ROOM){
 			if (resultCode== Activity.RESULT_OK){
-				ableToStart=true;
+				if (mParticipants!=null){
+					myPosition=mParticipants.indexOf(me);
+					ableToStart=true;
+				}
+
 			}else if (resultCode== GamesActivityResultCodes.RESULT_LEFT_ROOM){
 				leaveRoom();
 			}else if (resultCode==Activity.RESULT_CANCELED){
@@ -149,7 +165,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public void submitScore(int highScore) {
-		if (isSignedIn() == true)
+		if (isSignedIn())
 		{
 			Games.Leaderboards.submitScore(gameHelper.getApiClient(),
 					getString(R.string.leaderboard_highest), highScore);
@@ -172,7 +188,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	@Override
 	public void showScore()
 	{
-		if (isSignedIn() == true)
+		if (isSignedIn())
 		{
 			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(),
 					getString(R.string.leaderboard_highest)), requestCode);
@@ -207,13 +223,21 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	@Override
 	public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
 		byte[] buf=realTimeMessage.getMessageData();
+		if (buf[0]=='P'){
+			int id=buf[1];
+			int[] position=new int[4];
+			for (int i=2;i<=5;i++){
+				position[i-2]=(int)buf[i];
+			}
+			playerPositions.put(id,position);
+		}else if (buf[0]=='S'){
+			int id=buf[1];
+			playerStatus.put(id, String.valueOf(buf[2]));
+		}
 		String sender=realTimeMessage.getSenderParticipantId();
-		positionY=(int)buf[0]*100+(int)buf[1];
+		receivedPlayer=buf;
 	}
 
-	public int getPositionY(){
-		return positionY;
-	}
 	// Show error message about game being cancelled and return to main screen.
 	void showGameError() {
 		BaseGameUtils.makeSimpleDialog(this, "error");
@@ -261,6 +285,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 		mParticipants=room.getParticipants();
 		mMyId=room.getParticipantId(Games.Players.getCurrentPlayerId(gameHelper.getApiClient()));
+		me=room.getParticipant(mMyId);
 	}
 
 	public boolean getAbleToStart(){
@@ -300,8 +325,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	@Override
 	public void onConnectedToRoom(Room room) {
 		mParticipants=room.getParticipants();
-		mMyId=room.getParticipantId(Games.Players.getCurrentPlayerId(gameHelper.getApiClient()));
-
+		mMyId = room.getParticipantId(Games.Players.getCurrentPlayerId(gameHelper.getApiClient()));
+		me=room.getParticipant(mMyId);
 		if (mRoomId==null){
 			mRoomId=room.getRoomId();
 		}
@@ -348,6 +373,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	void updateRoom(Room room){
 		if (room!=null){
 			mParticipants=room.getParticipants();
+			me=room.getParticipant(mMyId);
 		}
 	}
 
@@ -363,4 +389,19 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	}
 
+	public void destroy(){
+		this.destroy();
+	}
+
+	public int getMyPosition(){
+		return myPosition;
+	}
+
+	public int[] getPlayerPosition(int id){
+		return playerPositions.get(id);
+	}
+
+	public String getPlayerStatus(int id){
+		return playerStatus.get(id);
+	}
 }

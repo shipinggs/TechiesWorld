@@ -28,6 +28,11 @@ import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.Tools.B2WorldCreator;
 import com.shiping.gametest.Tools.WorldContactListener;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -94,6 +99,7 @@ public class PlayScreen implements Screen {
 
         player = new Player(this);
 
+
         world.setContactListener(new WorldContactListener());
 
         items = new Array<Item>();
@@ -151,7 +157,7 @@ public class PlayScreen implements Screen {
         // slow the player down 'naturally'
         player.b2body.setLinearVelocity(player.b2body.getLinearVelocity().x / 2, player.b2body.getLinearVelocity().y / 2);
 
-        world.step(1/60f, 6, 2);
+        world.step(1 / 60f, 6, 2);
 
         player.update(dt);
         for (Item item: items) {
@@ -167,6 +173,7 @@ public class PlayScreen implements Screen {
         // let map renderer know what it needs to render
         // only render what the gamecam can see
         renderer.setView(gamecam);
+
 
     }
 
@@ -188,8 +195,10 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
 
+
         // draw player sprites
         player.draw(game.batch);
+
 
         for (Item item: items) {
             item.draw(game.batch);
@@ -242,4 +251,6 @@ public class PlayScreen implements Screen {
         b2dr.dispose();
         hud.dispose();
     }
+
+
 }

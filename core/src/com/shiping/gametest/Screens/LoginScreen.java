@@ -80,6 +80,7 @@ public class LoginScreen implements Screen {
                 /*
                 THINGS TO DO WHEN LOGIN BUTTON IS PRESSED
                  */
+                TechiesWorld.playServices.signIn();
                 Gdx.app.log("Logout button", "Pressed"); //** Usually used to start Game, etc. **//
                 return true;
             }
@@ -89,14 +90,19 @@ public class LoginScreen implements Screen {
                 THINGS TO DO WHEN LOGIN BUTTON IS RELEASED
                  */
                 Gdx.app.log("Logout button", "Released");
-                if (TechiesWorld.playServices.isSignedIn()){
-                    ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuScreen(game));
-                }
+                Gdx.app.log("isSignedIn", "" + TechiesWorld.playServices.isSignedIn());
+
             }
         });
 
         stage.addActor(loginBtn);
 
+    }
+
+    public void update(float delta){
+        if (TechiesWorld.playServices.isSignedIn()){
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuScreen(game));
+        }
     }
 
     /**
@@ -106,6 +112,7 @@ public class LoginScreen implements Screen {
      */
     @Override
     public void render(float delta) {
+        update(delta);
         Gdx.gl.glClearColor(0, 0, 99, 1); // rgba. clear screen with blue
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 
@@ -117,6 +124,8 @@ public class LoginScreen implements Screen {
         batch.end();
 
     }
+
+
 
     /**
      * @param width
@@ -166,3 +175,4 @@ public class LoginScreen implements Screen {
 
     }
 }
+
