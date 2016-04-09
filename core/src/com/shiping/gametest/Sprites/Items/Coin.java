@@ -34,7 +34,6 @@ public class Coin extends Item {
 
         textureAnimation = new Animation(0.2f, frames);
         setRegion(textureAnimation.getKeyFrame(stateTimer, true));
-
     }
 
     @Override
