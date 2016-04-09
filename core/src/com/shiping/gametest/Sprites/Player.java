@@ -11,17 +11,23 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.ItemDef;
 import com.shiping.gametest.TechiesWorld;
 
+
+
 /**
  * Created by shiping on 2/3/16.
  */
+
 public class Player extends Sprite {
     private int score;
     private int minesLeft;
+
 
     private enum State { ALIVE, GROWING, DEAD }
     private State currentState;
@@ -169,7 +175,11 @@ public class Player extends Sprite {
 
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
-        bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        if (TechiesWorld.playServices.getMyPosition()==0){
+            bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        }else if (TechiesWorld.playServices.getMyPosition()==1){
+            bdef.position.set(880 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        }
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 

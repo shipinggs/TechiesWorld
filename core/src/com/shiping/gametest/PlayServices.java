@@ -17,5 +17,6 @@ public interface PlayServices {
     public void broadcastMsg(byte[] mMsgBuf);
     public void destroy();
     public int getMyPosition();
-    public int[] getPlayerPosition();
+    public int[] getPlayerPosition(int id);
+    public String getPlayerStatus(int id);
 }
