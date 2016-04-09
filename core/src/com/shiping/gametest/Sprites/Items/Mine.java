@@ -135,12 +135,8 @@ public class Mine extends Item {
         }
         // update sprite to correspond with position of b2body
         setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
-//        body.setLinearVelocity(velocity);
 
     }
-
-
-
 
     public State getState() {
         return currentState;
