@@ -19,6 +19,8 @@ import com.shiping.gametest.Sprites.Player;
  */
 public class Mine extends Item {
 
+    private int playerID; // put by which player
+
     public enum State { PLACED, TRANSITION, ARMED, HIDDEN, EXPLODING }
     private State currentState;
     private State previousState;
@@ -27,15 +29,19 @@ public class Mine extends Item {
     private TextureRegion placedTexture;
     private TextureRegion transitionTexture;
     private TextureRegion armedTexture;
+    private TextureRegion nullTexture;
     private Animation explosion;
 
-    public Mine(PlayScreen screen, float x, float y) {
+    public Mine(PlayScreen screen, float x, float y, int playerID) {
         super(screen, x, y);
+        this.playerID = playerID;
 
+        // set TextureRegions for different states of mine
         Texture texture = new Texture("PNGPack.png");
         placedTexture = new TextureRegion((texture), 0, 0, 70, 70);
         transitionTexture = new TextureRegion((texture), 70, 0, 70, 70);
         armedTexture = new TextureRegion((texture), 140, 0, 70, 70);
+        nullTexture = new TextureRegion((texture), 210, 0, 70, 70);
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
 
@@ -49,8 +55,68 @@ public class Mine extends Item {
         frames.clear();
 
         currentState = previousState = State.PLACED;
-
         setRegion(placedTexture);
+    }
+
+
+    public TextureRegion getFrame(float dt) {
+        TextureRegion region;
+
+        switch (currentState) {
+            case PLACED:
+                region = placedTexture;
+                break;
+            case TRANSITION:
+                region = transitionTexture;
+                break;
+            case ARMED:
+                region = armedTexture;
+                break;
+            case HIDDEN:
+                region = nullTexture;
+                break;
+            case EXPLODING:
+                region = explosion.getKeyFrame(stateTime, true);
+                break;
+            default:
+                region = armedTexture;
+                break;
+        }
+
+        stateTime = currentState == previousState? stateTime + dt : 0;
+        previousState = currentState;
+        return region;
+    }
+
+    @Override
+    public void update(float dt) {
+        super.update(dt);
+        setRegion(getFrame(dt));
+        if (currentState == State.PLACED && stateTime > 0.5) {
+            currentState = State.TRANSITION;
+        } else if (currentState == State.TRANSITION && stateTime > 1) {
+            currentState = State.ARMED;
+            defineItem();
+        } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != screen.getPlayerID()) {
+            currentState = State.HIDDEN;
+        } else if (currentState == State.EXPLODING & stateTime > 0.5) {
+            destroy();
+        }
+        // update sprite to correspond with position of b2body
+        setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
+
+    }
+
+    public State getState() {
+        return currentState;
+    }
+
+    @Override
+    public void contact(Player player) {
+        if (currentState == State.ARMED || currentState == State.HIDDEN) {
+            currentState = State.EXPLODING;
+            player.setPlayerDead();
+        }
     }
 
 
@@ -71,7 +137,7 @@ public class Mine extends Item {
         FixtureDef fdef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(24 / TechiesWorld.PPM, 24/ TechiesWorld.PPM);
-        if (currentState == State.ARMED) {
+        if (currentState == State.ARMED && playerID != screen.getPlayerID()) {
             fdef.filter.categoryBits = TechiesWorld.MINE_BIT;
         } else {
             fdef.filter.categoryBits = TechiesWorld.NOTHING_BIT;
@@ -82,63 +148,5 @@ public class Mine extends Item {
 
         fdef.shape = shape;
         body.createFixture(fdef).setUserData(this);
-    }
-
-    public TextureRegion getFrame(float dt) {
-        TextureRegion region;
-
-        switch (currentState) {
-            case PLACED:
-                region = placedTexture;
-                break;
-            case TRANSITION:
-                region = transitionTexture;
-                break;
-            case ARMED:
-                region = armedTexture;
-                break;
-            case HIDDEN:
-                region = null;
-                break;
-            case EXPLODING:
-                region = explosion.getKeyFrame(stateTime, true);
-                break;
-            default:
-                region = armedTexture;
-                break;
-        }
-
-        stateTime = currentState == previousState? stateTime + dt : 0;
-        previousState = currentState;
-        return region;
-    }
-
-    @Override
-    public void contact(Player player) {
-        if (currentState == State.ARMED) {
-            currentState = State.EXPLODING;
-            player.setPlayerDead();
-        }
-    }
-
-    @Override
-    public void update(float dt) {
-        super.update(dt);
-        setRegion(getFrame(dt));
-        if (currentState == State.PLACED && stateTime > 0.5) {
-            currentState = State.TRANSITION;
-        } else if (currentState == State.TRANSITION && stateTime > 2) {
-            currentState = State.ARMED;
-            defineItem();
-        } else if (currentState == State.EXPLODING & stateTime > 0.5) {
-            destroy();
-        }
-        // update sprite to correspond with position of b2body
-        setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
-
-    }
-
-    public State getState() {
-        return currentState;
     }
 }

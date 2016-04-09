@@ -41,6 +41,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class PlayScreen implements Screen {
 
+    private int playerID;
     private TechiesWorld game;
 
     private OrthographicCamera gamecam;
@@ -70,6 +71,7 @@ public class PlayScreen implements Screen {
 
 
     public PlayScreen(TechiesWorld game) {
+        playerID = 0;
 
         this.game = game;
         // create cam used to follow player
@@ -121,9 +123,11 @@ public class PlayScreen implements Screen {
         if (!itemsToSpawn.isEmpty()) {
             ItemDef idef = itemsToSpawn.poll(); // like a pop for a queue
             if (idef.type == Mine.class) {
-                items.add(new Mine(this, idef.position.x, idef.position.y));
+                // TODO replace playerID parameter with received message
+                items.add(new Mine(this, idef.position.x, idef.position.y, 0));
             } else if (idef.type == Coin.class) {
                 items.add(new Coin(this, idef.position.x, idef.position.y, player.getAmountDropped()));
+
             }
 
         }
@@ -140,7 +144,7 @@ public class PlayScreen implements Screen {
             if (controller.isMinePressed()) {
                 if (player.getMinesLeft() > 0) {
                     spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
-                    player.decreaseMinesCount();
+//                    player.decreaseMinesCount();
                 }
             }
 
@@ -216,17 +220,16 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
 
-
-        // draw player sprites
-        player.draw(game.batch);
-        otherPlayer1.draw(game.batch);
-
-        // TODO draw other players sprites here
-
         // draw items (mines, coins) sprites
         for (Item item: items) {
             item.draw(game.batch);
         }
+
+        // draw player sprites
+        player.draw(game.batch);
+        otherPlayer1.draw(game.batch);
+        // TODO draw other players sprites here
+
         game.batch.end();
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
@@ -250,6 +253,10 @@ public class PlayScreen implements Screen {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public int getPlayerID() {
+        return playerID;
     }
 
     @Override
