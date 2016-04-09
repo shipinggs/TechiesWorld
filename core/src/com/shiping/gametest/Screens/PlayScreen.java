@@ -71,7 +71,7 @@ public class PlayScreen implements Screen {
 
 
     public PlayScreen(TechiesWorld game) {
-        playerID = 1;
+        playerID = 0;
 
         this.game = game;
         // create cam used to follow player
