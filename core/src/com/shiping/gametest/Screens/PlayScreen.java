@@ -111,7 +111,7 @@ public class PlayScreen implements Screen {
             if (idef.type == Mine.class) {
                 items.add(new Mine(this, idef.position.x, idef.position.y));
             } else if (idef.type == Coin.class) {
-                items.add(new Coin(this, idef.position.x, idef.position.y, player));
+                items.add(new Coin(this, idef.position.x, idef.position.y, player.getAmountDropped()));
             }
 
         }
@@ -126,7 +126,10 @@ public class PlayScreen implements Screen {
     public void handleInput(float dt) {
         if (!player.isPlayerDead()) {
             if (controller.isMinePressed()) {
-                spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
+                if (player.getMinesLeft() > 0) {
+                    spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
+                    player.decreaseMinesCount();
+                }
             }
 
             if (controller.isUpPressed() && player.b2body.getLinearVelocity().y <= 0.6) {

@@ -20,9 +20,9 @@ public class Coin extends Item {
     private float stateTimer;
     private boolean setToDestroy;
 
-    public Coin(PlayScreen screen, float x, float y, Player player) {
+    public Coin(PlayScreen screen, float x, float y, int amount) {
         super(screen, x, y);
-
+        this.amount = amount;
         stateTimer = 0;
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
@@ -35,8 +35,6 @@ public class Coin extends Item {
         textureAnimation = new Animation(0.2f, frames);
         setRegion(textureAnimation.getKeyFrame(stateTimer, true));
 
-        amount = player.getScore() / 3 < 200? 200 : player.getScore() / 3;
-        player.minusScore(amount);
     }
 
     @Override

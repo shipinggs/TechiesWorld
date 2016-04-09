@@ -132,6 +132,12 @@ public class Player extends Sprite {
         else return State.ALIVE;
     }
 
+    public int getAmountDropped() {
+        int amount = score / 3 < 200? 200 : score / 3;
+        score -= amount;
+        return amount;
+    }
+
     public void addScore(Coin coin) {
         score += coin.getAmount();
     }
@@ -143,6 +149,10 @@ public class Player extends Sprite {
 
     public int getScore() {
         return score;
+    }
+
+    public void decreaseMinesCount() {
+        minesLeft--;
     }
 
     public int getMinesLeft() {
