@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.TechiesWorld;
 
 /**
@@ -26,18 +27,21 @@ public class Hud implements Disposable {
     private static Integer score;
     private Integer minesLeft;
 
+    private Player player;
+
     Label countDownLabel;
     Label minesLeftLabel;
-    static Label scoreLabel;
+    Label scoreLabel;
     Label timeLabel;
     Label minesLabel;
     Label playerLabel;
 
-    public Hud (SpriteBatch sb) {
+    public Hud (SpriteBatch sb, Player player) {
+        this.player = player;
         worldTimer = 180;
         timeCount = 0;
-        score = 0;
-        minesLeft = 3;
+        score = player.getScore();
+        minesLeft = player.getMinesLeft();
 
         hudcam = new OrthographicCamera();
         viewport = new FitViewport(TechiesWorld.V_WIDTH, TechiesWorld.V_HEIGHT, hudcam);
@@ -71,22 +75,19 @@ public class Hud implements Disposable {
 
         stage.addActor(table); // add table to the stage
 
-
-
     }
 
     public void update (float dt) {
         timeCount += dt;
+        score = player.getScore();  // update score from player
+        minesLeft = player.getMinesLeft(); // update minesLeft from player
+        scoreLabel.setText((String.format("%06d", score)));
+        minesLeftLabel.setText((String.format("%1d", minesLeft)));
         if (timeCount >= 1) {   // one second
             worldTimer--;
             countDownLabel.setText(String.format("%03d", worldTimer));
             timeCount = 0;
         }
-    }
-
-    public static void addScore(int value) {
-        score += value;
-        scoreLabel.setText((String.format("%06d", score)));
     }
 
     @Override

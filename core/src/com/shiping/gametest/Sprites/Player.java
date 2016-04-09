@@ -11,27 +11,27 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Items.Coin;
-import com.shiping.gametest.Sprites.Items.Item;
 import com.shiping.gametest.Sprites.Items.ItemDef;
-import com.shiping.gametest.Sprites.Items.Mine;
 import com.shiping.gametest.TechiesWorld;
+
+
 
 /**
  * Created by shiping on 2/3/16.
  */
+
 public class Player extends Sprite {
-    private int playerID;
     private int score;
     private int minesLeft;
 
+
     private enum State { ALIVE, GROWING, DEAD }
-    private enum Direction { TOP, TOPRIGHT, RIGHT, RIGHTBOTTOM, BOTTOM, BOTTOMLEFT, LEFT, LEFTTOP }
     private State currentState;
     private State previousState;
-    private Direction currentDirection;
-    private Direction previousDirection;
     private World world;
     private PlayScreen screen;
     public Body b2body;
@@ -56,8 +56,6 @@ public class Player extends Sprite {
         this.screen = screen;
         currentState = State.ALIVE;
         previousState = State.ALIVE;
-        currentDirection = Direction.BOTTOM;
-        previousDirection = Direction.BOTTOM;
 
         score = 500;
         minesLeft = 3;
@@ -87,7 +85,7 @@ public class Player extends Sprite {
 
         definePlayer();
 
-        setBounds(100, 0, 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
+        setBounds(0, 0, 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
         setRegion(playerAlive.getKeyFrame(stateTimer, true));
     }
 
@@ -111,7 +109,6 @@ public class Player extends Sprite {
 
     public TextureRegion getFrame (float dt) {
         currentState = getState();
-        System.out.println(currentState);
         TextureRegion region;
         switch (currentState) {
             case DEAD:
@@ -125,7 +122,7 @@ public class Player extends Sprite {
                 break;
             case ALIVE:
             default:
-                region = playerIsGrown ?  beastAlive.getKeyFrame(stateTimer, true) : playerAlive.getKeyFrame(stateTimer, true);
+                region = playerIsGrown? beastAlive.getKeyFrame(stateTimer, true) : playerAlive.getKeyFrame(stateTimer, true);
                 break;
         }
 
@@ -141,12 +138,31 @@ public class Player extends Sprite {
         else return State.ALIVE;
     }
 
+    public int getAmountDropped() {
+        int amount = score / 3 < 200? 200 : score / 3;
+        score -= amount;
+        return amount;
+    }
+
     public void addScore(Coin coin) {
         score += coin.getAmount();
     }
 
+    public void minusScore(int amount) {
+        if (score - amount >= 0) score -= amount;
+        else score = 0;
+    }
+
     public int getScore() {
         return score;
+    }
+
+    public void decreaseMinesCount() {
+        minesLeft--;
+    }
+
+    public int getMinesLeft() {
+        return minesLeft;
     }
 
     public void setPlayerDead() {
@@ -159,7 +175,11 @@ public class Player extends Sprite {
 
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
-        bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        if (TechiesWorld.playServices.getMyPosition()==0){
+            bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        }else if (TechiesWorld.playServices.getMyPosition()==1){
+            bdef.position.set(880 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        }
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
@@ -168,7 +188,8 @@ public class Player extends Sprite {
         shape.setRadius(24 / TechiesWorld.PPM);
         fdef.filter.categoryBits = TechiesWorld.PLAYER_BIT;
         fdef.filter.maskBits = TechiesWorld.WALL_BIT |
-                TechiesWorld.MINE_BIT;
+                TechiesWorld.MINE_BIT |
+                TechiesWorld.COIN_BIT;
 
         fdef.shape = shape;
         b2body.createFixture(fdef).setUserData(this); // fixture is within a body

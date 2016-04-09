@@ -18,22 +18,23 @@ public class Coin extends Item {
     private int amount;
     private Animation textureAnimation;
     private float stateTimer;
+    private boolean setToDestroy;
 
-    public Coin(PlayScreen screen, float x, float y, Player player) {
+    public Coin(PlayScreen screen, float x, float y, int amount) {
         super(screen, x, y);
+        this.amount = amount;
+        stateTimer = 0;
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
 
+        // add coin bubbly animation
         for (int i = 0; i < 6; i++) {
             frames.add(new TextureRegion(new Texture("PNGPack.png"), i*64, 70, 64, 64 ));
         }
 
-        textureAnimation = new Animation(0.1f, frames);
-        setRegion(textureAnimation.getKeyFrame(0.1f));
-        // to do ANIMATION
-        if (player.getScore() / 3 < 200) {
-            amount = 200;
-        } else amount = player.getScore() / 3;
+        textureAnimation = new Animation(0.2f, frames);
+        setRegion(textureAnimation.getKeyFrame(stateTimer, true));
+
     }
 
     @Override
@@ -60,12 +61,20 @@ public class Coin extends Item {
 
     @Override
     public void contact(Player player) {
-        destroy();
+        System.out.println("Coin touched");
+        setToDestroy = true;
         player.addScore(this);
+        System.out.println("test");
     }
 
     @Override
     public void update(float dt) {
+        super.update(dt);
+        if (setToDestroy) {
+            destroy();
+        }
+        stateTimer += dt;
         setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
+        setRegion(textureAnimation.getKeyFrame(stateTimer, true));
     }
 }
