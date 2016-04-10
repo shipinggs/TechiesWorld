@@ -13,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.shiping.gametest.Scenes.Controller;
+import com.shiping.gametest.Scenes.TouchPadControl;
 import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.OtherPlayer;
 import com.shiping.gametest.TechiesWorld;
@@ -49,7 +49,7 @@ public class PlayScreen implements Screen {
     private OrthographicCamera gamecam;
     private Viewport gamePort;
     private Hud hud;
-    private Controller controller;
+    private TouchPadControl touchPadControl;
 
     // Tiled map variables
     private TmxMapLoader mapLoader;
@@ -110,8 +110,8 @@ public class PlayScreen implements Screen {
         // Heads-Up Display
         hud = new Hud(game.batch, player);
 
-        // Controller
-        controller = new Controller(game.batch);
+        // TouchPad Controller
+        touchPadControl = new TouchPadControl(game.batch);
 
 
         world.setContactListener(new WorldContactListener());
@@ -160,25 +160,13 @@ public class PlayScreen implements Screen {
 
     public void handleInput(float dt) {
         if (!player.isPlayerDead()) {
-            if (controller.isMinePressed()) {
+            if (touchPadControl.isMinePressed()) {
                 if (player.getMinesLeft() > 0) {
                     spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
-//                    player.decreaseMinesCount();
+//                    player.decreaseMinesCount(); //TODO uncomment when needed
                 }
             }
-
-            if (controller.isUpPressed() && player.b2body.getLinearVelocity().y <= 0.6) {
-                player.b2body.applyForce(new Vector2(0, 60f), player.b2body.getWorldCenter(), true);
-            }
-            if (controller.isDownPressed() && player.b2body.getLinearVelocity().y >= -0.6) {
-                player.b2body.applyForce(new Vector2(0, -60f), player.b2body.getWorldCenter(), true);
-            }
-            if (controller.isLeftPressed() && player.b2body.getLinearVelocity().x >= -0.6) {
-                player.b2body.applyForce(new Vector2(-60f, 0), player.b2body.getWorldCenter(), true);
-            }
-            if (controller.isRightPressed() && player.b2body.getLinearVelocity().x <= 0.6) {
-                player.b2body.applyForce(new Vector2(60f, 0), player.b2body.getWorldCenter(), true);
-            }
+            player.b2body.setLinearVelocity(touchPadControl.getVelocityVector());
         }
 
     }
@@ -189,9 +177,6 @@ public class PlayScreen implements Screen {
 
         // handle any queued items to spawn
         handleSpawningItems();
-
-        // slow the player down 'naturally'
-        player.b2body.setLinearVelocity(player.b2body.getLinearVelocity().x / 2, player.b2body.getLinearVelocity().y / 2);
 
         world.step(1 / 60f, 6, 2);
 
@@ -253,13 +238,13 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
-        controller.draw();
+        touchPadControl.draw();
     }
 
     @Override
     public void resize(int width, int height) {
         gamePort.update(width, height);
-        controller.resize(width, height);
+        touchPadControl.resize(width, height);
     }
 
     public TiledMap getMap() {
