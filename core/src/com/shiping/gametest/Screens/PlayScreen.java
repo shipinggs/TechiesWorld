@@ -31,6 +31,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -68,6 +70,9 @@ public class PlayScreen implements Screen {
 
     private Array<Item> items;
     private LinkedBlockingQueue<ItemDef> itemsToSpawn;
+
+    private int mineId;
+    private Map<Integer,Item> mineMap;
 
 
     public PlayScreen(TechiesWorld game) {
@@ -113,6 +118,9 @@ public class PlayScreen implements Screen {
 
         items = new Array<Item>();
         itemsToSpawn = new LinkedBlockingQueue<ItemDef>();
+
+        mineId=TechiesWorld.playServices.getMyPosition()*5;
+        mineMap=new HashMap<Integer, Item>();
     }
 
     public void spawnItem(ItemDef idef) {
@@ -123,8 +131,19 @@ public class PlayScreen implements Screen {
         if (!itemsToSpawn.isEmpty()) {
             ItemDef idef = itemsToSpawn.poll(); // like a pop for a queue
             if (idef.type == Mine.class) {
+                Mine mine=new Mine(this, idef.position.x, idef.position.y, TechiesWorld.playServices.getMyPosition());
                 // TODO replace playerID parameter with received message
-                items.add(new Mine(this, idef.position.x, idef.position.y, 0));
+                items.add(mine);
+                if (mineId>=(TechiesWorld.playServices.getMyPosition()+1)*5){
+                    mineId=TechiesWorld.playServices.getMyPosition()*5;
+                    int id=items.indexOf(mineMap.get(mineId),true);
+                    items.get(id).destroy();
+                    mineMap.put(mineId,mine);
+                    mineId++;
+                }else {
+                    mineMap.put(mineId,mine);
+                    mineId++;
+                }
             } else if (idef.type == Coin.class) {
                 items.add(new Coin(this, idef.position.x, idef.position.y, player.getAmountDropped()));
 
