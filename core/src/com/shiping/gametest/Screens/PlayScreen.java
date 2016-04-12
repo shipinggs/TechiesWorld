@@ -26,11 +26,8 @@ import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.Tools.B2WorldCreator;
 import com.shiping.gametest.Tools.WorldContactListener;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.awt.font.TextHitInfo;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -72,7 +69,7 @@ public class PlayScreen implements Screen {
     private LinkedBlockingQueue<ItemDef> itemsToSpawn;
 
     private int mineId;
-    private Map<Integer,Item> mineMap;
+    private Map<Integer,Mine> mineMap;
 
 
     public PlayScreen(TechiesWorld game) {
@@ -120,7 +117,7 @@ public class PlayScreen implements Screen {
         itemsToSpawn = new LinkedBlockingQueue<ItemDef>();
 
         mineId=TechiesWorld.playServices.getMyPosition()*5;
-        mineMap=new HashMap<Integer, Item>();
+        mineMap=new HashMap<Integer, Mine>();
     }
 
     public void spawnItem(ItemDef idef) {
@@ -132,23 +129,64 @@ public class PlayScreen implements Screen {
             ItemDef idef = itemsToSpawn.poll(); // like a pop for a queue
             if (idef.type == Mine.class) {
                 Mine mine=new Mine(this, idef.position.x, idef.position.y, TechiesWorld.playServices.getMyPosition());
+                synchronized (items){
+                    items.add(mine);
+                }
                 // TODO replace playerID parameter with received message
-                items.add(mine);
                 if (mineId>=(TechiesWorld.playServices.getMyPosition()+1)*5){
                     mineId=TechiesWorld.playServices.getMyPosition()*5;
-                    int id=items.indexOf(mineMap.get(mineId),true);
-                    items.get(id).destroy();
-                    mineMap.put(mineId,mine);
-                    mineId++;
-                }else {
-                    mineMap.put(mineId,mine);
-                    mineId++;
                 }
+                if (mineMap.get(mineId)!=null){
+                    try {
+                        TechiesWorld.playServices.broadcastMsg(sendRemoveMineBuffer(mineMap.get(mineId)));
+                        int id=items.indexOf(mineMap.get(mineId),true);
+                        synchronized (items){
+                            if (!items.get(id).isDestroyed()){
+                                items.get(id).destroy();
+                            }
+                        }
+                        mineMap.remove(mineId);
+                    }catch (Exception e){}
+                }
+
+                mineMap.put(mineId,mine);
+                TechiesWorld.playServices.broadcastMsg(sendPlantMineBuffer(idef.position.x, idef.position.y));
+                mine.setMineId(mineId);
+                mineId++;
             } else if (idef.type == Coin.class) {
                 items.add(new Coin(this, idef.position.x, idef.position.y, player.getAmountDropped()));
+            }
+        }
+        if (!TechiesWorld.playServices.mineIsEmpty()){
+            ArrayList<int[]> arrayList=TechiesWorld.playServices.getMinePositionAndClear();
+            for (int[] positions:arrayList){
+                if (positions[0]==1){
+                    int minesId=positions[1];
+                    int playerId=positions[2];
+                    float x=(positions[3]*100+positions[4])/TechiesWorld.PPM;
+                    float y=(positions[5]*100+positions[6])/TechiesWorld.PPM;
+                    Mine mine=new Mine(this, x, y, playerId);
+                    mine.setMineId(minesId);
+                    synchronized (items){
+                        items.add(mine);
+                    }
+                    mineMap.put(minesId,mine);
+                }else if (positions[0]==0){
+                    int minesId=positions[1];
+                    if (mineMap.get(minesId)!=null){
+                        try {
+                            int id=items.indexOf(mineMap.get(minesId),true);
+                            synchronized (items){
+                                if (!items.get(id).isDestroyed()){
+                                    items.get(id).destroy();
+                                }
+                            }
+                            mineMap.remove(minesId);
+                        }catch (Exception e){}
+                    }
+                }
 
             }
-
         }
     }
 
@@ -189,6 +227,9 @@ public class PlayScreen implements Screen {
         // update items (coin, mines) sprites
         for (Item item: items) {
             item.update(dt);
+            if (item.isDestroyed()){
+                items.removeValue(item,true);
+            }
         }
 
         // update hud numbers (time, score etc.)
@@ -287,5 +328,31 @@ public class PlayScreen implements Screen {
         hud.dispose();
     }
 
+    public byte[] sendPlantMineBuffer(float x, float y){
+        byte[] minePosition=new byte[8];
+        minePosition[0]=(byte)'M';
+        minePosition[1]=(byte)1;
+        minePosition[2]=(byte)mineId;
+        minePosition[3]=(byte)TechiesWorld.playServices.getMyPosition();
+        int x1= (int) (x*TechiesWorld.PPM);
+        int y1= (int) (y*TechiesWorld.PPM);
+        minePosition[4]=(byte) (x1/100);
+        minePosition[5]=(byte) (x1%100);
+        minePosition[6]=(byte) (y1/100);
+        minePosition[7]=(byte) (y1%100);
+        return minePosition;
+    }
 
+    public byte[] sendRemoveMineBuffer(Mine mine){
+        byte[] minePosition=new byte[8];
+        minePosition[0]=(byte)'M';
+        minePosition[1]=(byte)0;
+        minePosition[2]=(byte)mine.mineId;
+        minePosition[3]=(byte) 0;
+        minePosition[4]=(byte) 0;
+        minePosition[5]=(byte) 0;
+        minePosition[6]=(byte) 0;
+        minePosition[7]=(byte) 0;
+        return minePosition;
+    }
 }

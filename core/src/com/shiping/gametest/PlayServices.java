@@ -1,5 +1,7 @@
 package com.shiping.gametest;
 
+import java.util.ArrayList;
+
 /**
  * Created by G751-4314 on 1/4/2016.
  */
@@ -19,4 +21,6 @@ public interface PlayServices {
     public int getMyPosition();
     public int[] getPlayerPosition(int id);
     public String getPlayerStatus(int id);
+    public ArrayList<int[]> getMinePositionAndClear();
+    public boolean mineIsEmpty();
 }

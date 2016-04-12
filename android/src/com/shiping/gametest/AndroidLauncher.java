@@ -22,11 +22,14 @@ import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListene
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.example.games.basegameutils.BaseGameUtils;
 import com.google.example.games.basegameutils.GameHelper;
+import com.shiping.gametest.Screens.PlayScreen;
+import com.shiping.gametest.Sprites.Items.Mine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		RealTimeMessageReceivedListener, RoomStatusUpdateListener, RoomUpdateListener{
@@ -56,6 +59,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	Map<Integer, String> playerStatus=new HashMap<>();
 
 	public byte[] receivedPlayer;
+
+	public ArrayList<int[]> minePosition=new ArrayList<>();
+
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -233,6 +239,14 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}else if (buf[0]=='S'){
 			int id=buf[1];
 			playerStatus.put(id, String.valueOf((char)buf[2]));
+		}else if(buf[0]=='M'){
+			int[] mineValue=new int[7];
+			for (int i=1;i<=7;i++){
+				mineValue[i-1]=(int)buf[i];
+			}
+			synchronized (minePosition){
+				minePosition.add(mineValue);
+			}
 		}
 	}
 
@@ -402,4 +416,21 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	public String getPlayerStatus(int id){
 		return playerStatus.get(id);
 	}
+
+	public ArrayList<int[]> getMinePositionAndClear(){
+		synchronized (minePosition){
+			ArrayList<int[]> tempArray=new ArrayList<>(minePosition);
+			minePosition.clear();
+			return tempArray;
+		}
+	}
+
+	public boolean mineIsEmpty(){
+		synchronized (minePosition){
+			return minePosition.isEmpty();
+		}
+	}
+
+
+
 }

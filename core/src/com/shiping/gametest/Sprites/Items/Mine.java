@@ -14,6 +14,8 @@ import com.shiping.gametest.TechiesWorld;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Player;
 
+import java.awt.font.TextHitInfo;
+
 /**
  * Created by shiping on 2/3/16.
  */
@@ -31,6 +33,9 @@ public class Mine extends Item {
     private TextureRegion armedTexture;
     private TextureRegion nullTexture;
     private Animation explosion;
+
+
+    public int mineId;
 
     public Mine(PlayScreen screen, float x, float y, int playerID) {
         super(screen, x, y);
@@ -97,9 +102,10 @@ public class Mine extends Item {
         } else if (currentState == State.TRANSITION && stateTime > 1) {
             currentState = State.ARMED;
             defineItem();
-        } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != screen.getPlayerID()) {
+        } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != TechiesWorld.playServices.getMyPosition()) {
             currentState = State.HIDDEN;
         } else if (currentState == State.EXPLODING & stateTime > 0.5) {
+            TechiesWorld.playServices.broadcastMsg(sendRemoveMineBuffer(this));
             destroy();
         }
         // update sprite to correspond with position of b2body
@@ -137,7 +143,7 @@ public class Mine extends Item {
         FixtureDef fdef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(24 / TechiesWorld.PPM, 24/ TechiesWorld.PPM);
-        if (currentState == State.ARMED && playerID != screen.getPlayerID()) {
+        if (currentState == State.ARMED && playerID != TechiesWorld.playServices.getMyPosition()) {
             fdef.filter.categoryBits = TechiesWorld.MINE_BIT;
         } else {
             fdef.filter.categoryBits = TechiesWorld.NOTHING_BIT;
@@ -149,4 +155,23 @@ public class Mine extends Item {
         fdef.shape = shape;
         body.createFixture(fdef).setUserData(this);
     }
+
+
+    public void setMineId(int id){
+        mineId=id;
+    }
+
+    public byte[] sendRemoveMineBuffer(Mine mine){
+        byte[] minePosition=new byte[8];
+        minePosition[0]=(byte)'M';
+        minePosition[1]=(byte)0;
+        minePosition[2]=(byte)mine.mineId;
+        minePosition[3]=(byte) 0;
+        minePosition[4]=(byte) 0;
+        minePosition[5]=(byte) 0;
+        minePosition[6]=(byte) 0;
+        minePosition[7]=(byte) 0;
+        return minePosition;
+    }
+
 }
