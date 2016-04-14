@@ -196,11 +196,11 @@ public class Player extends Sprite {
         fdef.shape = shape;
         b2body.createFixture(fdef).setUserData(this); // fixture is within a body
     }
-    public byte[] sendPositionBuffer(){
+    public byte[] sendPositionBuffer(){ //sending player position to other device
         byte[] position=new byte[6];
         position[0]=(byte)'P';
-        position[1]= (byte) TechiesWorld.playServices.getMyPosition();
-        int x= (int) (b2body.getPosition().x*TechiesWorld.PPM);
+        position[1]= (byte) TechiesWorld.playServices.getMyPosition(); //id of player (0-3)
+        int x= (int) (b2body.getPosition().x*TechiesWorld.PPM); //multiply with ppm value to get int in hundreds range
         int y= (int) (b2body.getPosition().y*TechiesWorld.PPM);
         position[2]= (byte) (x/100);
         position[3]= (byte) (x%100);

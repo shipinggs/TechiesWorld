@@ -100,7 +100,7 @@ public class OtherPlayer extends Sprite {
          */
         if (TechiesWorld.playServices.getPlayerPosition(playerNumber)!=null){
             int[] position=TechiesWorld.playServices.getPlayerPosition(playerNumber);
-            float x=position[0]*100+position[1]-30;
+            float x=position[0]*100+position[1]-30; //30 is some offset due to data transfer
             float y=position[2]*100+position[3]-30;
             setPosition(x / TechiesWorld.PPM, y / TechiesWorld.PPM);
             setRegion(getFrame(dt));

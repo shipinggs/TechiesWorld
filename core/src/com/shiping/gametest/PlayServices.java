@@ -15,8 +15,32 @@ public interface PlayServices {
     public void startQuickGame();
     public boolean getAbleToStart();
     public void broadcastMsg(byte[] mMsgBuf);
+    public void broadcastReliableMsg(byte[] mMsgBuf);
     public void destroy();
     public int getMyPosition();
     public int[] getPlayerPosition(int id);
     public String getPlayerStatus(int id);
+
+
+
+    public int getPlayerId();
+    //coins
+    public int getUnspawnedIndex();
+    public void incrementUnspawnedIndex();
+    public void putCoinInHashmap(int playerID, int n, int amount, int index);
+
+    //Scenario 1: coin spawned on other device
+    public int[] getSpawnedCoinPosition();
+    public int numOfNewCoinsLeftToSpawn();
+
+
+    //Scenario 2: coin spawned on my device
+
+
+
+
+    public int getCoinToRemoveIndex();
+    public int numOfCoinsToRemove();
+    public void decrementCoinsToRemove();
+
 }

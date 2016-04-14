@@ -36,6 +36,22 @@ public class Coin extends Item {
         setRegion(textureAnimation.getKeyFrame(stateTimer, true));
     }
 
+    public Coin(PlayScreen screen, float x, float y, int amount, int index) {
+        super(screen, x, y, index);
+        this.amount = amount;
+        stateTimer = 0;
+
+        Array<TextureRegion> frames = new Array<TextureRegion>();
+
+        // add coin bubbly animation
+        for (int i = 0; i < 6; i++) {
+            frames.add(new TextureRegion(new Texture("PNGPack.png"), i*64, 70, 64, 64 ));
+        }
+
+        textureAnimation = new Animation(0.2f, frames);
+        setRegion(textureAnimation.getKeyFrame(stateTimer, true));
+    }
+
     @Override
     public void defineItem() {
         BodyDef bdef = new BodyDef();
@@ -64,6 +80,10 @@ public class Coin extends Item {
         setToDestroy = true;
         player.addScore(this);
         System.out.println("test");
+
+        //broadcast msg to other players
+        byte[] msg = {'c', (byte) this.index}; //coin destroyed msg
+        TechiesWorld.playServices.broadcastMsg(msg);
     }
 
     @Override
