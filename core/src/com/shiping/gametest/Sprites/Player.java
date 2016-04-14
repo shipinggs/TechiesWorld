@@ -11,8 +11,6 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.ItemDef;
