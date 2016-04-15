@@ -101,6 +101,7 @@ public class Player extends Sprite {
             playerIsDead = false;
             currentState = State.ALIVE;
             screen.spawnItem(new ItemDef(new Vector2(b2body.getPosition().x, b2body.getPosition().y), Coin.class));
+
             world.destroyBody(b2body);
             definePlayer();
         }

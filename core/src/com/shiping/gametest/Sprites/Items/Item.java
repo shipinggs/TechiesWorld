@@ -17,7 +17,7 @@ public abstract class Item extends Sprite {
     protected World world;
     protected Vector2 velocity;
     protected boolean toDestroy;
-    protected boolean destroyed;
+    public boolean destroyed;
     protected Body body;
     public int index;
 
@@ -61,5 +61,13 @@ public abstract class Item extends Sprite {
 
     public void destroy() {
         toDestroy = true;
+    }
+
+    public boolean isDestroyed(){
+        return destroyed;
+    }
+
+    public boolean isToDestroy(){
+        return toDestroy;
     }
 }

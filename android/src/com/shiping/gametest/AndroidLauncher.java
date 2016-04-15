@@ -24,12 +24,17 @@ import com.google.example.games.basegameutils.BaseGameUtils;
 import com.google.example.games.basegameutils.GameHelper;
 import com.shiping.gametest.Screens.PlayScreen;
 
+
+import com.shiping.gametest.Sprites.Items.Mine;
+
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		RealTimeMessageReceivedListener, RoomStatusUpdateListener, RoomUpdateListener{
@@ -63,6 +68,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	Map<Integer, String> playerStatus=new HashMap<>();
 
 	public byte[] receivedPlayer;
+
 
 
 	//Variables for coins
@@ -99,6 +105,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+
+
+	public ArrayList<int[]> minePosition=new ArrayList<>();
 
 
 
@@ -281,6 +290,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}else if (buf[0]=='S'){
 			int id=buf[1];
 			playerStatus.put(id, String.valueOf((char)buf[2]));
+
 		}else if (buf[0]=='c'){ //coin collected by other player , format of msg {'c', index}
 			collectedIndex = buf[1];
 			numOfCoinsToRemove++;
@@ -303,6 +313,16 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			//at this point we haven't added the mMyIDhashcode of this device to playersMyIdHashcode yet hence the +1
 			if(playersMyIdHashcode.size()+1==mParticipants.size()){ //add a barrier so that mParticipants has been initialised else it is null
 				setPlayerId();
+			}
+
+
+		}else if(buf[0]=='M'){
+			int[] mineValue=new int[7];
+			for (int i=1;i<=7;i++){
+				mineValue[i-1]=(int)buf[i];
+			}
+			synchronized (minePosition){
+				minePosition.add(mineValue);
 			}
 
 		}
@@ -495,6 +515,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		return playerStatus.get(id);
 	}
 
+
 	@Override
 	public int getPlayerId() { //synced so that playscreen must wait and cannot be instantiated until playerid is ready
 		synchronized (playersMyIdHashcode){
@@ -647,6 +668,22 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	public void calcMyIdHashCode(){
 		mMyIdHashcode = mMyId.hashCode();
 	}
+
+	public ArrayList<int[]> getMinePositionAndClear(){
+		synchronized (minePosition){
+			ArrayList<int[]> tempArray=new ArrayList<>(minePosition);
+			minePosition.clear();
+			return tempArray;
+		}
+	}
+
+	public boolean mineIsEmpty(){
+		synchronized (minePosition){
+			return minePosition.isEmpty();
+		}
+	}
+
+
 
 
 }

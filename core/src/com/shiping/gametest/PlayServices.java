@@ -1,5 +1,7 @@
 package com.shiping.gametest;
 
+import java.util.ArrayList;
+
 /**
  * Created by G751-4314 on 1/4/2016.
  */
@@ -23,6 +25,7 @@ public interface PlayServices {
 
 
 
+
     public int getPlayerId();
     //coins
     public int getUnspawnedIndex();
@@ -42,5 +45,9 @@ public interface PlayServices {
     public int getCoinToRemoveIndex();
     public int numOfCoinsToRemove();
     public void decrementCoinsToRemove();
+
+
+    public ArrayList<int[]> getMinePositionAndClear();
+    public boolean mineIsEmpty();
 
 }
