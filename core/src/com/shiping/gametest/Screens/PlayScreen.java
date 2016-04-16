@@ -234,6 +234,9 @@ public class PlayScreen implements Screen {
         // update hud numbers (time, score etc.)
         hud.update(dt);
 
+        // update touchpadcontrol
+        touchPadControl.update(dt);
+
         // update gamecam position to follow player unless player wanders into corners of map
         float posX = player.b2body.getPosition().x;
         float posY = player.b2body.getPosition().y;
@@ -326,6 +329,7 @@ public class PlayScreen implements Screen {
         world.dispose();
         b2dr.dispose();
         hud.dispose();
+        touchPadControl.dispose();
     }
 
     public byte[] sendPlantMineBuffer(float x, float y){

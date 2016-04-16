@@ -55,7 +55,7 @@ public class Player extends Sprite {
         currentState = State.ALIVE;
         previousState = State.ALIVE;
 
-        score = 500;
+        score = 500;    // starting score/gold
         minesLeft = 3;
 
         stateTimer = 0;

@@ -47,9 +47,12 @@ public class OtherPlayer extends Sprite {
         playerIsDead = false;
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
+        
 
         switch (playerNumber) {
+
             case 0:
+
                 // get run animation frames and add them to playerAlive Animation
                 for (int i = 0; i < 6; i++) {
                     frames.add(new TextureRegion(texturePack, i * 64, 262, 64, 64));
