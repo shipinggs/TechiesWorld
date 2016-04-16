@@ -1,5 +1,6 @@
 package com.shiping.gametest.Sprites.Items;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -105,7 +106,6 @@ public class Mine extends Item {
         } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != TechiesWorld.playServices.getMyPosition()) {
             currentState = State.HIDDEN;
         } else if (currentState == State.EXPLODING & stateTime > 0.5) {
-            TechiesWorld.playServices.broadcastMsg(sendRemoveMineBuffer(this));
             destroy();
         }
         // update sprite to correspond with position of b2body
@@ -117,10 +117,18 @@ public class Mine extends Item {
         return currentState;
     }
 
+    public void setCurrentState(int index) {
+        currentState = State.values()[index];
+    }
+
     @Override
     public void contact(Player player) {
         if (currentState == State.ARMED || currentState == State.HIDDEN) {
+            TechiesWorld.playServices.broadcastMsg(sendRemoveMineBuffer(this));
             currentState = State.EXPLODING;
+            screen.getAudioManager().get("audio/sounds/explosion2.wav", Sound.class).play();
+            screen.getAudioManager().get("audio/sounds/die2.wav", Sound.class).play();
+            screen.getAudioManager().get("audio/sounds/slime2.wav", Sound.class).play();
             player.setPlayerDead();
             player.b2body.setLinearVelocity(0, 0);
         }

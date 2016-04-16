@@ -1,10 +1,12 @@
 package com.shiping.gametest.Sprites;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
+import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.TechiesWorld;
 
 import java.awt.font.TextHitInfo;
@@ -18,6 +20,7 @@ import java.awt.font.TextHitInfo;
 
 public class OtherPlayer extends Sprite {
     private int playerNumber;
+    private PlayScreen screen;
 
     private enum State { ALIVE, DEAD }
     private State currentState;
@@ -35,7 +38,8 @@ public class OtherPlayer extends Sprite {
     private Texture respawnPack = new Texture("respawn.png");
 
 
-    public OtherPlayer(int playerNum) {
+    public OtherPlayer(PlayScreen screen, int playerNum) {
+        this.screen = screen;
         this.playerNumber = playerNum;
         currentState = State.ALIVE;
         previousState = State.ALIVE;
@@ -97,9 +101,12 @@ public class OtherPlayer extends Sprite {
         TextureRegion region;
         switch (currentState) {
             case DEAD:
+                if (stateTimer == 0) screen.getAudioManager().get("audio/sounds/explosion.wav", Sound.class).play(0.7f);
                 region = playerDead.getKeyFrame(stateTimer, true);
                 break;
             case ALIVE:
+                if (stateTimer == 0) screen.getAudioManager().get("audio/sounds/respawn.wav", Sound.class).play(0.5f);
+
                 region = stateTimer <= 1.8? playerRespawn.getKeyFrame(stateTimer,true) : playerAlive.getKeyFrame(stateTimer,true);
                 break;
             default:

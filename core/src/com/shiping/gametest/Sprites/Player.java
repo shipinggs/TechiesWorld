@@ -1,5 +1,6 @@
 package com.shiping.gametest.Sprites;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -120,6 +121,7 @@ public class Player extends Sprite {
 
             world.destroyBody(b2body);
             definePlayer();
+            screen.getAudioManager().get("audio/sounds/respawn.wav", Sound.class).play();
         } else if (previousState == State.RESPAWN && stateTimer > 1.8) {
             currentState = State.ALIVE;
             playerIsRespawning = false;
