@@ -32,6 +32,7 @@ public class WorldContactListener implements ContactListener {
                 break;
 
             case TechiesWorld.PLAYER_BIT | TechiesWorld.COIN_BIT:
+            case TechiesWorld.RESPAWN_BIT | TechiesWorld.COIN_BIT:
                 if (fixA.getFilterData().categoryBits == TechiesWorld.COIN_BIT) {
                     ((Coin) fixA.getUserData()).contact((Player) fixB.getUserData());
                 } else {

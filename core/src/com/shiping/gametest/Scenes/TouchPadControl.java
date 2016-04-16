@@ -157,7 +157,7 @@ public class TouchPadControl implements Disposable {
 
     //Returns a Vector2 indicating the linear velocity to give the Player's b2body
     public Vector2 getVelocityVector() {
-        return new Vector2(touchpad.getKnobPercentX(), touchpad.getKnobPercentY());
+        return new Vector2(touchpad.getKnobPercentX()*0.7f, touchpad.getKnobPercentY()*0.7f);
     }
 
     public void resize(int width, int height) {

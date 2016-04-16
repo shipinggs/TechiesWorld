@@ -17,6 +17,7 @@ public class TechiesWorld extends Game {
 	public static final short EXPLODED_BIT = 8;
 	public static final short ENEMY_BIT = 16;
 	public static final short COIN_BIT = 32;
+	public static final short RESPAWN_BIT = 64;
 
 	public SpriteBatch batch;
 

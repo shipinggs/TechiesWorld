@@ -64,6 +64,7 @@ public class Coin extends Item {
         shape.setRadius(24 / TechiesWorld.PPM);
         fdef.filter.categoryBits = TechiesWorld.COIN_BIT;
         fdef.filter.maskBits = TechiesWorld.WALL_BIT |
+                TechiesWorld.RESPAWN_BIT |
                 TechiesWorld.PLAYER_BIT ;
 
         fdef.shape = shape;
@@ -78,7 +79,7 @@ public class Coin extends Item {
     public void contact(Player player) {
         System.out.println("Coin touched");
         setToDestroy = true;
-        player.addScore(this);
+        player.addGold(this);
         System.out.println("test");
 
         //broadcast msg to other players

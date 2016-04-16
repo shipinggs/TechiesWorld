@@ -23,11 +23,10 @@ import com.shiping.gametest.TechiesWorld;
  */
 
 public class Player extends Sprite {
-    private int score;
-    private int minesLeft;
+    private int playerID;
+    private int gold;
 
-
-    private enum State { ALIVE, GROWING, DEAD }
+    private enum State { ALIVE, DEAD, RESPAWN }
     private State currentState;
     private State previousState;
     private World world;
@@ -36,74 +35,78 @@ public class Player extends Sprite {
 
     private Animation playerAlive;
     private Animation playerDead;
-    private Animation beastAlive;
-    private Animation growPlayer;
+    private Animation playerRespawn;
 
     private float stateTimer;
-    private boolean playerIsGrown;
     private boolean runGrowAnimation;
-    private boolean timeToDefineBeastPlayer;
-    private boolean timeToRedefinePlayer;
     private boolean playerIsDead;
+    private boolean playerIsRespawning;
 
     private Texture texturePack = new Texture("PNGPack.png");
+    private Texture respawnPack = new Texture("respawn.png");
 
 
     public Player(PlayScreen screen) {
         this.world = screen.getWorld();
         this.screen = screen;
-        currentState = State.ALIVE;
-        previousState = State.ALIVE;
+        currentState = State.RESPAWN;
+        previousState = State.RESPAWN;
+        playerIsRespawning = true;
 
-        score = 500;    // starting score/gold
-        minesLeft = 3;
+        playerID = TechiesWorld.playServices.getMyPosition();
+        gold = 500;    // starting score/gold
 
         stateTimer = 0;
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
-        int yOffset = 134 + TechiesWorld.playServices.getMyPosition() * 128;
+        int yOffset = 134 + playerID * 128;
         // get run animation frames and add them to playerAlive Animation
         for (int i = 0; i < 6; i++) {
             frames.add(new TextureRegion(texturePack, i * 64, yOffset, 64, 64));
         }
         playerAlive = new Animation(0.2f, frames);
-
         // clear frames for next animation sequence
         frames.clear();
-
         // get dying animation frames and add them to playerDead Animation
         for (int i = 0; i < 6; i++) {
             frames.add(new TextureRegion(texturePack, i * 64, yOffset+64, 64, 64));
         }
         playerDead = new Animation (0.1f, frames);
-
         // clear frames for next animation sequence
         frames.clear();
 
+        for (int i = 0; i < 6; i++) {
+            frames.add(new TextureRegion(respawnPack, i * 64, playerID*64, 64, 64));
+        }
+        playerRespawn = new Animation (0.1f, frames);
+        // clear frames for next animation sequence
+        frames.clear();
 
         definePlayer();
 
         setBounds(0, 0, 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
-        setRegion(playerAlive.getKeyFrame(stateTimer, true));
+        setRegion(playerRespawn.getKeyFrame(stateTimer, true));
     }
 
     public void update(float dt) {
         // update our sprite to correspond with the position of our Box2D body
-        if (playerIsGrown) {
-            setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2 - 6 / TechiesWorld.PPM);
-        } else {
-            setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
-        }
-
+        setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
+        setRegion(getFrame(dt));
         if (playerIsDead && previousState == State.DEAD && stateTimer > 0.6) {
             playerIsDead = false;
-            currentState = State.ALIVE;
+            playerIsRespawning = true;
+            currentState = State.RESPAWN;
             screen.spawnItem(new ItemDef(new Vector2(b2body.getPosition().x, b2body.getPosition().y), Coin.class));
 
             world.destroyBody(b2body);
             definePlayer();
+        } else if (previousState == State.RESPAWN && stateTimer > 1.8) {
+            currentState = State.ALIVE;
+            playerIsRespawning = false;
+
+            definePlayer();
         }
-        setRegion(getFrame(dt));
+
         TechiesWorld.playServices.broadcastMsg(sendPositionBuffer());
         TechiesWorld.playServices.broadcastMsg(sendStatusBuffer());
     }
@@ -115,18 +118,15 @@ public class Player extends Sprite {
             case DEAD:
                 region = playerDead.getKeyFrame(stateTimer, true);
                 break;
-            case GROWING:
-                region = growPlayer.getKeyFrame(stateTimer);
-                if (growPlayer.isAnimationFinished(stateTimer)) {
-                    runGrowAnimation = false;
-                }
+            case RESPAWN:
+                region = playerRespawn.getKeyFrame(stateTimer, true);
                 break;
             case ALIVE:
             default:
-                region = playerIsGrown? beastAlive.getKeyFrame(stateTimer, true) : playerAlive.getKeyFrame(stateTimer, true);
+                region = playerAlive.getKeyFrame(stateTimer, true);
                 break;
         }
-
+        System.out.println(currentState);
         stateTimer = currentState == previousState? stateTimer + dt : 0;
         previousState = currentState;
         return region;
@@ -135,35 +135,27 @@ public class Player extends Sprite {
 
     public State getState() {
         if (playerIsDead) return State.DEAD;
-        else if (runGrowAnimation) return State.GROWING;
+        else if (playerIsRespawning) return State.RESPAWN;
         else return State.ALIVE;
     }
 
     public int getAmountDropped() {
-        int amount = score / 3 < 200? 200 : score / 3;
-        score -= amount;
+        int amount = gold / 3 < 200? 200 : gold / 3;
+        gold -= amount;
         return amount;
     }
 
-    public void addScore(Coin coin) {
-        score += coin.getAmount();
+    public void addGold(Coin coin) {
+        gold += coin.getAmount();
     }
 
-    public void minusScore(int amount) {
-        if (score - amount >= 0) score -= amount;
-        else score = 0;
+    public void minusGold(int amount) {
+        if (gold - amount >= 0) gold -= amount;
+        else gold = 0;
     }
 
-    public int getScore() {
-        return score;
-    }
-
-    public void decreaseMinesCount() {
-        minesLeft--;
-    }
-
-    public int getMinesLeft() {
-        return minesLeft;
+    public int getGoldAmount() {
+        return gold;
     }
 
     public void setPlayerDead() {
@@ -174,20 +166,32 @@ public class Player extends Sprite {
         return playerIsDead;
     }
 
+
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
-        if (TechiesWorld.playServices.getMyPosition()==0){
-            bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
-        }else if (TechiesWorld.playServices.getMyPosition()==1){
-            bdef.position.set(880 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        if (currentState == State.RESPAWN) {
+            if (playerID == 0){
+                bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+            } else if (playerID == 1){
+                bdef.position.set(880 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+            }
+        } else if (currentState == State.ALIVE) {
+            Vector2 currentPosition = b2body.getPosition();
+            world.destroyBody(b2body);
+            bdef.position.set(currentPosition);
         }
+
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
         shape.setRadius(24 / TechiesWorld.PPM);
-        fdef.filter.categoryBits = TechiesWorld.PLAYER_BIT;
+        if (currentState == State.RESPAWN) {
+            fdef.filter.categoryBits = TechiesWorld.RESPAWN_BIT;
+        } else if (currentState == State.ALIVE) {
+            fdef.filter.categoryBits = TechiesWorld.PLAYER_BIT;
+        }
         fdef.filter.maskBits = TechiesWorld.WALL_BIT |
                 TechiesWorld.MINE_BIT |
                 TechiesWorld.COIN_BIT;

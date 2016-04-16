@@ -47,8 +47,8 @@ public class MenuScreen implements Screen {
         Gdx.input.setInputProcessor(stage); //** stage is responsive **//
 
         //font, reserved for future use
-        calibriFontTexture = new Texture(Gdx.files.internal("fonts/calibri_font.png"));
-        font = new BitmapFont(Gdx.files.internal("fonts/calibri_font.fnt"), new TextureRegion(calibriFontTexture), false);
+        calibriFontTexture = new Texture(Gdx.files.internal("fonts/hudfont.png"));
+        font = new BitmapFont(Gdx.files.internal("fonts/hudfont.fnt"), new TextureRegion(calibriFontTexture), false);
         font.setColor(0,0,1,1); //** Blue text **//
 
         //buttons

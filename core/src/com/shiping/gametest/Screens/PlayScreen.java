@@ -228,21 +228,12 @@ public class PlayScreen implements Screen {
     public void handleInput(float dt) {
         if (!player.isPlayerDead()) {
             if (touchPadControl.isMinePressed()) {
-                if (player.getMinesLeft() > 0) {
-                    //spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
-//                    player.decreaseMinesCount(); //TODO uncomment when needed
 
+                //mine spawn
+                spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class, getUnspawnedCoinIndex()));
+                Gdx.app.log("X", "" + player.b2body.getPosition().x);
+                Gdx.app.log("Y", "" + player.b2body.getPosition().y);
 
-                    //testing coin spawn
-                    spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class, getUnspawnedCoinIndex()));
-                    Gdx.app.log("X", "" + player.b2body.getPosition().x);
-                    Gdx.app.log("Y", "" + player.b2body.getPosition().y);
-
-
-
-                    //byte[] testmsg = {'t', 127};
-                    //TechiesWorld.playServices.broadcastMsg(testmsg);
-                }
             }
             player.b2body.setLinearVelocity(touchPadControl.getVelocityVector());
         }
