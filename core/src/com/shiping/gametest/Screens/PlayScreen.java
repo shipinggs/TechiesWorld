@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -48,7 +49,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  */
 public class PlayScreen implements Screen {
-
     private int playerID;
     private TechiesWorld game;
 
@@ -100,7 +100,7 @@ public class PlayScreen implements Screen {
 
 
     public PlayScreen(TechiesWorld game) {
-        playerID = TechiesWorld.playServices.getPlayerId(); //playerID determines coin spawn locations
+        playerID = TechiesWorld.playServices.getMyPosition(); //playerID determines coin spawn locations
 
         this.game = game;
         // create cam used to follow player
@@ -125,6 +125,7 @@ public class PlayScreen implements Screen {
         player = new Player(this);
 
         while (TechiesWorld.playServices.getMyPosition()==-1){}
+        //TODO change this number when implementing more players
         for (int i=0;i<2;i++){
             if (i!=TechiesWorld.playServices.getMyPosition()){
                 otherPlayer1 = new OtherPlayer(i);
@@ -338,15 +339,24 @@ public class PlayScreen implements Screen {
         // update hud numbers (time, score etc.)
         hud.update(dt);
 
+        // update touchpadcontrol
+        touchPadControl.update(dt);
+
+        // update gamecam position to follow player unless player wanders into corners of map
+        float posX = player.b2body.getPosition().x;
+        float posY = player.b2body.getPosition().y;
         gamecam.position.x = player.b2body.getPosition().x;
         gamecam.position.y = player.b2body.getPosition().y;
+        if (posX <= 0.5) gamecam.position.x = 0.5f;
+        if (posX >= 1.6) gamecam.position.x = 1.6f;
+        if (posY <= 0.6) gamecam.position.y = 0.6f;
+        if (posY >= 1.5) gamecam.position.y = 1.5f;
+
 
         gamecam.update();
         // let map renderer know what it needs to render
         // only render what the gamecam can see
         renderer.setView(gamecam);
-
-
     }
 
     @Override
@@ -358,12 +368,11 @@ public class PlayScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 
-
         // render game map
         renderer.render();
 
         // render our Box2D Debug Lines
-        b2dr.render(world, gamecam.combined); // TODO remove when ready
+//        b2dr.render(world, gamecam.combined); // TODO remove when ready
 
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
@@ -380,7 +389,7 @@ public class PlayScreen implements Screen {
 
         game.batch.end();
 
-        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
+        game.batch.setProjectionMatrix(hud.stage.getCamera().combined); // what is this for?
         hud.stage.draw();
         touchPadControl.draw();
     }
@@ -401,10 +410,6 @@ public class PlayScreen implements Screen {
 
     public Player getPlayer() {
         return player;
-    }
-
-    public int getPlayerID() {
-        return playerID;
     }
 
     @Override
@@ -429,6 +434,7 @@ public class PlayScreen implements Screen {
         world.dispose();
         b2dr.dispose();
         hud.dispose();
+        touchPadControl.dispose();
     }
 
 

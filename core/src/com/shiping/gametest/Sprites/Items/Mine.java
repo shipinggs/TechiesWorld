@@ -122,6 +122,7 @@ public class Mine extends Item {
         if (currentState == State.ARMED || currentState == State.HIDDEN) {
             currentState = State.EXPLODING;
             player.setPlayerDead();
+            player.b2body.setLinearVelocity(0, 0);
         }
     }
 

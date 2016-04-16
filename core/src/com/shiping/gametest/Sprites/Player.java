@@ -11,8 +11,6 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.ItemDef;
@@ -57,16 +55,16 @@ public class Player extends Sprite {
         currentState = State.ALIVE;
         previousState = State.ALIVE;
 
-        score = 500;
+        score = 500;    // starting score/gold
         minesLeft = 3;
 
         stateTimer = 0;
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
-
+        int yOffset = 134 + TechiesWorld.playServices.getMyPosition() * 128;
         // get run animation frames and add them to playerAlive Animation
         for (int i = 0; i < 6; i++) {
-            frames.add(new TextureRegion(texturePack, i * 64, 134, 64, 64));
+            frames.add(new TextureRegion(texturePack, i * 64, yOffset, 64, 64));
         }
         playerAlive = new Animation(0.2f, frames);
 
@@ -75,7 +73,7 @@ public class Player extends Sprite {
 
         // get dying animation frames and add them to playerDead Animation
         for (int i = 0; i < 6; i++) {
-            frames.add(new TextureRegion(texturePack, i * 64, 198, 64, 64));
+            frames.add(new TextureRegion(texturePack, i * 64, yOffset+64, 64, 64));
         }
         playerDead = new Animation (0.1f, frames);
 
