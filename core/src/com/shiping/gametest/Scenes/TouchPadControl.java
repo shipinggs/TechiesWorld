@@ -137,7 +137,7 @@ public class TouchPadControl implements Disposable {
         }
         if (currentState == State.COOLDOWN) {
             mineBtnStyle.imageUp = mineBtnSkin.getDrawable("Cooldown");
-            if (stateTimer > 3) {
+            if (stateTimer > 2) {
                 currentState = State.READY;
             }
         }

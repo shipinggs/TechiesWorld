@@ -19,10 +19,23 @@ public abstract class Item extends Sprite {
     protected boolean toDestroy;
     public boolean destroyed;
     protected Body body;
+    public int index;
 
     public Item(PlayScreen screen, float x, float y) {
         this.screen = screen;
         this.world = screen.getWorld();
+        this.index = -999;
+        setPosition(x, y);
+        setBounds(getX(), getY(), 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
+        defineItem();
+        toDestroy = false;
+        destroyed = false;
+    }
+
+    public Item(PlayScreen screen, float x, float y, int index) {
+        this.screen = screen;
+        this.world = screen.getWorld();
+        this.index = index;
         setPosition(x, y);
         setBounds(getX(), getY(), 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
         defineItem();

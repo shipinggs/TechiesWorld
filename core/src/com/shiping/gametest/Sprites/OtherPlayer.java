@@ -47,51 +47,25 @@ public class OtherPlayer extends Sprite {
         playerIsDead = false;
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
-        
+        int yOffset = 134 + playerNum * 128;  // to get yOffset in PNGPack based on playerID
 
-        switch (playerNumber) {
-
-            case 0:
-
-                // get run animation frames and add them to playerAlive Animation
-                for (int i = 0; i < 6; i++) {
-                    frames.add(new TextureRegion(texturePack, i * 64, 262, 64, 64));
-                }
-                playerAlive = new Animation(0.2f, frames);
-
-                // clear frames for next animation sequence
-                frames.clear();
-
-                // get dying animation frames and add them to playerDead Animation
-                for (int i = 0; i < 6; i++) {
-                    frames.add(new TextureRegion(texturePack, i * 64, 326, 64, 64));
-                }
-                playerDead = new Animation (0.1f, frames);
-
-                // clear frames for next animation sequence
-                frames.clear();
-                break;
-            case 1:
-                // get run animation frames and add them to playerAlive Animation
-                for (int i = 0; i < 6; i++) {
-                    frames.add(new TextureRegion(texturePack, i * 64, 262, 64, 64));
-                }
-                playerAlive = new Animation(0.2f, frames);
-
-                // clear frames for next animation sequence
-                frames.clear();
-
-                // get dying animation frames and add them to playerDead Animation
-                for (int i = 0; i < 6; i++) {
-                    frames.add(new TextureRegion(texturePack, i * 64, 326, 64, 64));
-                }
-                playerDead = new Animation (0.1f, frames);
-
-                // clear frames for next animation sequence
-                frames.clear();
-                break;
+        // get run animation frames and add them to playerAlive Animation
+        for (int i = 0; i < 6; i++) {
+            frames.add(new TextureRegion(texturePack, i * 64, yOffset, 64, 64));
         }
+        playerAlive = new Animation(0.2f, frames);
 
+        // clear frames for next animation sequence
+        frames.clear();
+
+        // get dying animation frames and add them to playerDead Animation
+        for (int i = 0; i < 6; i++) {
+            frames.add(new TextureRegion(texturePack, i * 64, yOffset+64, 64, 64));
+        }
+        playerDead = new Animation (0.1f, frames);
+
+        // clear frames for next animation sequence
+        frames.clear();
 
         setBounds(0, 0, 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
         setRegion(playerAlive.getKeyFrame(stateTimer, true));
@@ -103,7 +77,7 @@ public class OtherPlayer extends Sprite {
          */
         if (TechiesWorld.playServices.getPlayerPosition(playerNumber)!=null){
             int[] position=TechiesWorld.playServices.getPlayerPosition(playerNumber);
-            float x=position[0]*100+position[1]-30;
+            float x=position[0]*100+position[1]-30; //30 is some offset due to data transfer
             float y=position[2]*100+position[3]-30;
             setPosition(x / TechiesWorld.PPM, y / TechiesWorld.PPM);
             setRegion(getFrame(dt));
