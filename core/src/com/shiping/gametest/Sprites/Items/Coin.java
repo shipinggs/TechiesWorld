@@ -83,7 +83,7 @@ public class Coin extends Item {
         System.out.println("test");
 
         //broadcast msg to other players
-        byte[] msg = {'c', (byte) this.index}; //coin destroyed msg
+        byte[] msg = {'c', (byte) this.index}; //coin destroyed/collected msg
         TechiesWorld.playServices.broadcastMsg(msg);
     }
 

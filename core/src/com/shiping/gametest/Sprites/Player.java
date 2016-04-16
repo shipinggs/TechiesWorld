@@ -96,7 +96,27 @@ public class Player extends Sprite {
             playerIsDead = false;
             playerIsRespawning = true;
             currentState = State.RESPAWN;
-            screen.spawnItem(new ItemDef(new Vector2(b2body.getPosition().x, b2body.getPosition().y), Coin.class));
+
+            //sending message to other devices about coin spawned due to player's death
+            byte[] coinSpawnedMsg = new byte[5]; //format: {'C', x, y, index, amount}
+            coinSpawnedMsg[0] = 'C';
+            int x = Math.round(b2body.getPosition().x * 60); //multiplied by 60 to capture more resolution
+            coinSpawnedMsg[1] = (byte) x; //x position of coin
+            //Gdx.app.log("coinSpawnPositions X", ""+(coinSpawnPositions1[n][0] * 10));
+            int y = Math.round(b2body.getPosition().y * 60); //multiplied by 60 to capture more resolution
+            coinSpawnedMsg[2] = (byte) y; //y position of coin
+            // Gdx.app.log("coinSpawnPositions Y", ""+(coinSpawnPositions1[n][1] * 10));
+            int index = TechiesWorld.playServices.getUnspawnedIndex();
+
+            coinSpawnedMsg[3] = (byte) index; //index
+            int amount = getAmountDropped();
+            coinSpawnedMsg[4] = (byte) amount; //amount
+            int playerID = TechiesWorld.playServices.getPlayerId();
+            TechiesWorld.playServices.putMyCoinInHashmap(playerID, 999, amount, index); //playerID, n, amount, index (999 are just place holder values since they will not be used
+
+            TechiesWorld.playServices.broadcastMsg(coinSpawnedMsg);
+            screen.spawnItem(new ItemDef(new Vector2(b2body.getPosition().x, b2body.getPosition().y), Coin.class, index));
+            TechiesWorld.playServices.incrementUnspawnedIndex();
 
             world.destroyBody(b2body);
             definePlayer();
