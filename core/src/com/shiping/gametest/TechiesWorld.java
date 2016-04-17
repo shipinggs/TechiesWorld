@@ -1,9 +1,11 @@
 package com.shiping.gametest;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.shiping.gametest.Screens.LoginScreen;
-import com.shiping.gametest.Screens.PlayScreen;
 
 public class TechiesWorld extends Game {
 	public static final int V_WIDTH = 1200;
@@ -17,8 +19,10 @@ public class TechiesWorld extends Game {
 	public static final short EXPLODED_BIT = 8;
 	public static final short ENEMY_BIT = 16;
 	public static final short COIN_BIT = 32;
+	public static final short RESPAWN_BIT = 64;
 
 	public SpriteBatch batch;
+	private AssetManager manager;
 
 	public static PlayServices playServices;
 
@@ -29,8 +33,30 @@ public class TechiesWorld extends Game {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		//setScreen(new PlayScreen(this));
+		manager = new AssetManager();
+		manager.load("audio/music/bgm1.ogg", Music.class);
+		manager.load("audio/music/bgm2.ogg", Music.class);
+		manager.load("audio/sounds/mine.wav", Sound.class);
+		manager.load("audio/sounds/pickup2.wav", Sound.class);
+		manager.load("audio/sounds/respawn.wav", Sound.class);
+		manager.load("audio/sounds/slime2.wav", Sound.class);
+		manager.load("audio/sounds/die2.wav", Sound.class);
+		manager.load("audio/sounds/explosion.wav", Sound.class);
+		manager.load("audio/sounds/explosion2.wav", Sound.class);
+		manager.finishLoading();
+
 		setScreen(new LoginScreen(this));
+	}
+
+	public AssetManager getManager() {
+		return manager;
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		manager.dispose();
+		batch.dispose();
 	}
 
 	@Override

@@ -13,7 +13,7 @@ public class ItemDef {
     public ItemDef(Vector2 position, Class<?> type) {
         this.position = position;
         this.type = type;
-        this.index = 0;
+        this.index = -999; //was 0
     }
 
     public ItemDef(Vector2 position, Class<?> type, int index) {

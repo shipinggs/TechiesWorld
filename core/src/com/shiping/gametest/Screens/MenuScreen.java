@@ -3,6 +3,7 @@ package com.shiping.gametest.Screens;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -33,7 +34,7 @@ public class MenuScreen implements Screen {
     private BitmapFont font; //** same as that used in Tut 7 **//
     private Texture calibriFontTexture;
     private TextureAtlas buttonsAtlas; //** Holds the entire image for all buttons **//
-
+    private Music music;
 
 
     public MenuScreen(TechiesWorld game){
@@ -48,8 +49,8 @@ public class MenuScreen implements Screen {
         Gdx.input.setInputProcessor(stage); //** stage is responsive **//
 
         //font, reserved for future use
-        calibriFontTexture = new Texture(Gdx.files.internal("fonts/calibri_font.png"));
-        font = new BitmapFont(Gdx.files.internal("fonts/calibri_font.fnt"), new TextureRegion(calibriFontTexture), false);
+        calibriFontTexture = new Texture(Gdx.files.internal("fonts/hudfont.png"));
+        font = new BitmapFont(Gdx.files.internal("fonts/hudfont.fnt"), new TextureRegion(calibriFontTexture), false);
         font.setColor(0,0,1,1); //** Blue text **//
 
         //buttons
@@ -75,6 +76,7 @@ public class MenuScreen implements Screen {
         startGameBtn.setHeight(200); //** Button Height **//
         startGameBtn.setWidth(400); //** Button Width **//
 
+
         TextButton.TextButtonStyle styleInvitationBox=new TextButton.TextButtonStyle();
         styleInvitationBox.up=buttonSkin.getDrawable("button_logout");
         styleInvitationBox.down=buttonSkin.getDrawable("button_logout");
@@ -83,6 +85,11 @@ public class MenuScreen implements Screen {
         invitationBoxBtn.setPosition(100,500);
         invitationBoxBtn.setHeight(200);
         invitationBoxBtn.setWidth(400);
+
+        music = game.getManager().get("audio/music/bgm1.ogg", Music.class);
+        music.setLooping(true);
+        music.play();
+
 
     }
 
@@ -150,7 +157,9 @@ public class MenuScreen implements Screen {
     public void update(){
         if (TechiesWorld.playServices.isSignedIn()){
             if (TechiesWorld.playServices.getAbleToStart()){
+                music.stop();
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayScreen(game));
+                dispose();
             }
         }
     }
@@ -222,6 +231,7 @@ public class MenuScreen implements Screen {
         font.dispose();
         buttonsAtlas.dispose();
         buttonSkin.dispose();
+        music.dispose();
 
     }
 }

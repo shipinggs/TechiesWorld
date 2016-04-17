@@ -2,8 +2,12 @@ package com.shiping.gametest.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -47,7 +51,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  */
 public class PlayScreen implements Screen {
-
     private int playerID;
     private TechiesWorld game;
 
@@ -72,20 +75,26 @@ public class PlayScreen implements Screen {
     private Player player;
     private OtherPlayer otherPlayer1;
 
-
+    // Spawning items handlers
     private Array<Item> items;
     private LinkedBlockingQueue<ItemDef> itemsToSpawn;
 
+    // Music
+    private AssetManager audioManager;
+    private Music music;
 
-    //list of positions for coin spawn
-    //private float[][] coinSpawnPositions0 = {{0.3f,0.3f},{0.5f,0.3f},{0.7f,0.3f}}; //{x,y}
-    private float[][] coinSpawnPositions0 = {{0.3f,0.9f},{0.5f,0.9f},{0.7f,0.9f}};
-
+    //list of positions for coin spawn, format: {{x1,y1},{x2,y2},...,{xn,yn}}
+    /*private float[][] coinSpawnPositions0 = {{0.3f,0.9f},{0.5f,0.9f},{0.7f,0.9f}};
     private float[][] coinSpawnPositions1 = {{0.3f,1.2f},{0.5f,1.2f},{0.7f,1.2f}};
     private float[][] coinSpawnPositions2 = {{0.3f,1.5f},{0.5f,1.5f},{0.7f,1.5f}};
-    private float[][] coinSpawnPositions3 = {{0.3f,1.8f},{0.5f,1.8f},{0.7f,1.8f}};
+    private float[][] coinSpawnPositions3 = {{0.3f,1.8f},{0.5f,1.8f},{0.7f,1.8f}};*/
+    private float[][] coinSpawnPositions0 = {{0.3f,0.4f},{0.9f,0.4f},{1.5f,0.4f},{0.3f,0.7f},{0.7f,0.7f},{1.0f,0.7f},{1.5f,0.7f},{0.3f,1.0f},{0.9f,1.0f},{1.5f,1.0f}};
+    private float[][] coinSpawnPositions1 = {{0.5f,1.2f},{1.1f,1.2f},{1.7f,1.2f},{0.5f,1.5f},{0.9f,1.5f},{1.2f,1.5f},{1.7f,1.5f},{0.5f,1.8f},{1.1f,1.8f},{1.7f,1.8f}};
+    private float[][] coinSpawnPositions2 = {{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f}};
+    private float[][] coinSpawnPositions3 = {{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f}};
     private float[][][] allCoinSpawnPositions = {coinSpawnPositions0, coinSpawnPositions1, coinSpawnPositions2, coinSpawnPositions3};
-    private boolean[] coinSpawnPositionsOccupied ={false, false, false};
+    private boolean[] coinSpawnPositionsOccupied ={false, false, false, false, false, false, false, false, false, false};
+    int numOfCoinSpawnPositionsPerPlayer = 10;
     long timeCounter = 0;
 
     private int spawnTime = 300; //increase value to reduce frequency of coin spawn
@@ -96,24 +105,24 @@ public class PlayScreen implements Screen {
 
 
     public PlayScreen(TechiesWorld game) {
-        playerID = TechiesWorld.playServices.getPlayerId(); //playerID determines coin spawn locations
+        playerID = TechiesWorld.playServices.getMyPosition(); //playerID determines coin spawn locations
 
         this.game = game;
-        // create cam used to follow player
+        //create cam used to follow player
         gamecam = new OrthographicCamera();
-        // create a FitViewport to main virtual aspect ratio
+        //create a FitViewport to main virtual aspect ratio
         gamePort = new FitViewport(TechiesWorld.V_WIDTH / TechiesWorld.PPM, TechiesWorld.V_HEIGHT / TechiesWorld.PPM, gamecam);
 
         mapLoader = new TmxMapLoader();
         map = mapLoader.load("mapSample.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, 1 / TechiesWorld.PPM);
 
-        // Set initial gamecam position to be centered correctly
+        //Set initial gamecam position to be centered correctly
         gamecam.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2, 0);
 
         world = new World(new Vector2(0, 0), true); // 0, 0 denotes no x, y acceleration (gravity)
 
-        // Allows for debug lines of our box2d world
+        //Allows for debug lines of our box2d world
         b2dr = new Box2DDebugRenderer();
 
         creator = new B2WorldCreator(world, map);
@@ -121,16 +130,17 @@ public class PlayScreen implements Screen {
         player = new Player(this);
 
         while (TechiesWorld.playServices.getMyPosition()==-1){}
+        //TODO change this number when implementing more players
         for (int i=0;i<2;i++){
             if (i!=TechiesWorld.playServices.getMyPosition()){
-                otherPlayer1 = new OtherPlayer(i);
+                otherPlayer1 = new OtherPlayer(this, i);
             }
         }
 
-        // Heads-Up Display
+        //Heads-Up Display
         hud = new Hud(game.batch, player);
 
-        // TouchPad Controller
+        //TouchPad Controller
         touchPadControl = new TouchPadControl(game.batch);
 
 
@@ -141,6 +151,12 @@ public class PlayScreen implements Screen {
 
         mineId=TechiesWorld.playServices.getMyPosition()*5;
         mineMap=new HashMap<Integer, Mine>();
+
+        //Play music
+        audioManager = game.getManager();
+        music = audioManager.get("audio/music/bgm2.ogg", Music.class);
+        music.setLooping(true);
+        music.play();
     }
 
     public void spawnItem(ItemDef idef) {
@@ -169,7 +185,7 @@ public class PlayScreen implements Screen {
                             }
                         }
                         mineMap.remove(mineId);
-                    }catch (Exception e){}
+                    } catch (Exception e){}
                 }
 
                 mineMap.put(mineId,mine);
@@ -178,7 +194,8 @@ public class PlayScreen implements Screen {
                 mineId++;
             } else if (idef.type == Coin.class) {
                 //items.add(new Coin(this, idef.position.x, idef.position.y, player.getAmountDropped()));
-                items.add(new Coin(this, idef.position.x, idef.position.y, 100, idef.index));
+                int coinAmount = 100;
+                items.add(new Coin(this, idef.position.x, idef.position.y, coinAmount, idef.index));
 
 
             }
@@ -204,7 +221,7 @@ public class PlayScreen implements Screen {
                             int id=items.indexOf(mineMap.get(minesId),true);
                             synchronized (items){
                                 if (!items.get(id).isDestroyed()){
-                                    items.get(id).destroy();
+                                    ((Mine) items.get(id)).setCurrentState(4); // 4 for State.EXPLODING
                                 }
                             }
                             mineMap.remove(minesId);
@@ -226,50 +243,52 @@ public class PlayScreen implements Screen {
     public void handleInput(float dt) {
         if (!player.isPlayerDead()) {
             if (touchPadControl.isMinePressed()) {
-                if (player.getMinesLeft() > 0) {
-                    //spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class));
-//                    player.decreaseMinesCount(); //TODO uncomment when needed
+                //testing coin spawn
+                spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class, 999)); //999 is a placeholder for index input which is only required for coins
+                audioManager.get("audio/sounds/mine.wav", Sound.class).play();
+                Gdx.app.log("X", "" + player.b2body.getPosition().x);
+                Gdx.app.log("Y", "" + player.b2body.getPosition().y);
 
-
-                    //testing coin spawn
-                    spawnItem(new ItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), Mine.class, getUnspawnedCoinIndex()));
-                    Gdx.app.log("X", "" + player.b2body.getPosition().x);
-                    Gdx.app.log("Y", "" + player.b2body.getPosition().y);
-
-
-
-                    //byte[] testmsg = {'t', 127};
-                    //TechiesWorld.playServices.broadcastMsg(testmsg);
-                }
             }
             player.b2body.setLinearVelocity(touchPadControl.getVelocityVector());
         }
-
     }
 
     public void update(float dt) {
-        // handle player input first
+
+
+        //handle player input first
         handleInput(dt);
 
-        // handle any queued items to spawn
+        //handle any queued items to spawn
         handleSpawningItems();
 
         world.step(1 / 60f, 6, 2);
 
-        // update player sprite
+        //update player sprite
         player.update(dt);
         otherPlayer1.update(dt);
 
-        // spawn coins generated by other devices
+        //spawn coins generated by other devices
+
+
+        //Gdx.app.log("Before if statement", "numOfCoinsToSpawn: "+TechiesWorld.playServices.numOfNewCoinsLeftToSpawn());
 
         if(TechiesWorld.playServices.numOfNewCoinsLeftToSpawn() > 0){ //spawning coins from other devices
             int[] coinInfo = TechiesWorld.playServices.getSpawnedCoinPosition(); //coinInfo = {playerID, n, amount, index}, numOfCoinsToSpawn-- within method
             //this.spawnItem(new ItemDef(new Vector2(coinInfo[0], coinInfo[1]), Coin.class));
-            if(coinInfo!=null){
+            if(coinInfo!=null && coinInfo[0] < 4){ //to spawn coins not generated by player's death by checking coinInfo[0] < 4
                 float x = allCoinSpawnPositions[coinInfo[0]][coinInfo[1]][0];
                 float y = allCoinSpawnPositions[coinInfo[0]][coinInfo[1]][1];
                 int index = coinInfo[3];
                 this.spawnItem(new ItemDef(new Vector2(x, y), Coin.class, index));
+      Gdx.app.log("spawning coin from other device"," at x: "+x+" , at y: "+y);
+            }else if(coinInfo!=null && coinInfo[0] >= 4){ //when coinInfo[0] >= 4 means the coin is spawned during a player's death
+                float x = coinInfo[0]/60f; //divide by 60 since value was multiplied by 60 on other device before sending
+                float y = coinInfo[1]/60f;
+                int index = coinInfo[3];
+                this.spawnItem(new ItemDef(new Vector2(x, y), Coin.class, index));
+
             }
         }
 
@@ -287,7 +306,7 @@ public class PlayScreen implements Screen {
         // randomly spawn coins every set time interval
         if(timeCounter%spawnTime==0){ //change % value to adjust spawn frequency
             Random rand = new Random();
-            int  n = rand.nextInt(3); //randomly generate a number from 0 to 2 to select coin spawn position
+            int  n = rand.nextInt(numOfCoinSpawnPositionsPerPlayer); //randomly generate a number from 0 to 2 to select coin spawn position
             if(!coinSpawnPositionsOccupied[n] && playerID >=0){ //playerID is initialised to -1 and will take sometime to be assigned bew value of 0-3
                 int index = getUnspawnedCoinIndex();
                 TechiesWorld.playServices.incrementUnspawnedIndex();
@@ -301,7 +320,7 @@ public class PlayScreen implements Screen {
                // Gdx.app.log("coinSpawnPositions Y", ""+(coinSpawnPositions1[n][1] * 10));
                 coinSpawnedMsg[3] = (byte) index; //index
                 coinSpawnedMsg[4] = (byte) 100; //amount
-                TechiesWorld.playServices.putCoinInHashmap(playerID, n, 100, index); //playerID, n, amount, index
+                TechiesWorld.playServices.putMyCoinInHashmap(playerID, n, 100, index); //playerID, n, amount, index
 
                 TechiesWorld.playServices.broadcastMsg(coinSpawnedMsg);
 
@@ -323,15 +342,24 @@ public class PlayScreen implements Screen {
         // update hud numbers (time, score etc.)
         hud.update(dt);
 
+        // update touchpadcontrol
+        touchPadControl.update(dt);
+
+        // update gamecam position to follow player unless player wanders into corners of map
+        float posX = player.b2body.getPosition().x;
+        float posY = player.b2body.getPosition().y;
         gamecam.position.x = player.b2body.getPosition().x;
         gamecam.position.y = player.b2body.getPosition().y;
+        if (posX <= 0.5) gamecam.position.x = 0.5f;
+        if (posX >= 1.6) gamecam.position.x = 1.6f;
+        if (posY <= 0.6) gamecam.position.y = 0.6f;
+        if (posY >= 1.5) gamecam.position.y = 1.5f;
+
 
         gamecam.update();
         // let map renderer know what it needs to render
         // only render what the gamecam can see
         renderer.setView(gamecam);
-
-
     }
 
     @Override
@@ -343,12 +371,11 @@ public class PlayScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 
-
         // render game map
         renderer.render();
 
         // render our Box2D Debug Lines
-        b2dr.render(world, gamecam.combined); // TODO remove when ready
+//        b2dr.render(world, gamecam.combined); // TODO remove when ready
 
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
@@ -365,7 +392,7 @@ public class PlayScreen implements Screen {
 
         game.batch.end();
 
-        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
+        game.batch.setProjectionMatrix(hud.stage.getCamera().combined); // what is this for?
         hud.stage.draw();
         touchPadControl.draw();
     }
@@ -384,12 +411,8 @@ public class PlayScreen implements Screen {
         return world;
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
-    public int getPlayerID() {
-        return playerID;
+    public AssetManager getAudioManager() {
+        return audioManager;
     }
 
     @Override
@@ -414,6 +437,7 @@ public class PlayScreen implements Screen {
         world.dispose();
         b2dr.dispose();
         hud.dispose();
+        touchPadControl.dispose();
     }
 
 

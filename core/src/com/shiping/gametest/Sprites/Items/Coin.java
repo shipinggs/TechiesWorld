@@ -1,5 +1,6 @@
 package com.shiping.gametest.Sprites.Items;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -64,6 +65,7 @@ public class Coin extends Item {
         shape.setRadius(24 / TechiesWorld.PPM);
         fdef.filter.categoryBits = TechiesWorld.COIN_BIT;
         fdef.filter.maskBits = TechiesWorld.WALL_BIT |
+                TechiesWorld.RESPAWN_BIT |
                 TechiesWorld.PLAYER_BIT ;
 
         fdef.shape = shape;
@@ -76,13 +78,12 @@ public class Coin extends Item {
 
     @Override
     public void contact(Player player) {
-        System.out.println("Coin touched");
         setToDestroy = true;
-        player.addScore(this);
-        System.out.println("test");
+        player.addGold(this);
+        screen.getAudioManager().get("audio/sounds/pickup2.wav", Sound.class).play();
 
         //broadcast msg to other players
-        byte[] msg = {'c', (byte) this.index}; //coin destroyed msg
+        byte[] msg = {'c', (byte) this.index}; //coin destroyed/collected msg
         TechiesWorld.playServices.broadcastMsg(msg);
     }
 

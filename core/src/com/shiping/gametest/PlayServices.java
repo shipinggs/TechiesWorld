@@ -17,7 +17,6 @@ public interface PlayServices {
     public void showInvitationBox();
     public boolean getAbleToStart();
     public void broadcastMsg(byte[] mMsgBuf);
-    public void broadcastReliableMsg(byte[] mMsgBuf);
     public void destroy();
     public int getMyPosition();
     public int[] getPlayerPosition(int id);
@@ -30,7 +29,8 @@ public interface PlayServices {
     //coins
     public int getUnspawnedIndex();
     public void incrementUnspawnedIndex();
-    public void putCoinInHashmap(int playerID, int n, int amount, int index);
+    public void putMyCoinInHashmap(int playerID, int n, int amount, int index);
+    public void putOtherPlayerCoinInHashmap(int player_id, int n, int amount, int index);
 
     //Scenario 1: coin spawned on other device
     public int[] getSpawnedCoinPosition();

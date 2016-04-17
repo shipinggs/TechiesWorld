@@ -70,7 +70,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	private boolean mAutoStartSignInFlow = true;
 
 	// The participants in the currently active game
-	ArrayList<Participant> mParticipants = null;
+	//ArrayList<Participant> mParticipants = null;
+	ArrayList<Participant> mParticipants = new ArrayList<>();
 
 	//variables used to assign playerID (0-3)
 	String mMyId = null;
@@ -96,16 +97,14 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	//Variables for coins
 	Map<Integer, int[]> unspawnedCoinPositions = new HashMap<>();
 	int unspawnedIndex = -128; //lowest value of a byte
-
-	int unspawnedGetIndex = -128;
-	int unspawnedGetIndex1 = -64;
-	int unspawnedGetIndex2 = -1;
-	int unspawnedGetIndex3 = 63;
 	int numOfCoinsToSpawn = 0;
-	int[] unspawnedGetIndexArray = {-128, -64, -1, 63};
+	int[] unspawnedGetIndexArray = {-128, -64, -1, 63}; //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 	Object numOfCoinsToSpawnLock = new Object();
 
+
 	Map<Integer, int[]> collectedCoinPositions = new HashMap<>();
+
+
 	int collectedIndex = 0;
 	int numOfCoinsToRemove = 0;
 
@@ -120,16 +119,29 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	}
 
 	@Override
-	public void putCoinInHashmap(int player_id, int n, int amount, int index) {
-		synchronized (unspawnedCoinPositions) {
+
+	public void putMyCoinInHashmap(int player_id, int n, int amount, int index) {
+		synchronized (unspawnedCoinPositions){
 			int[] coinInfo = {player_id, n, amount, index};
 			unspawnedCoinPositions.put(index, coinInfo);
 		}
 	}
 
 
-	public ArrayList<int[]> minePosition = new ArrayList<>();
 
+	@Override
+	public void putOtherPlayerCoinInHashmap(int player_id, int n, int amount, int index) {
+		synchronized (unspawnedCoinPositions){
+			int[] coinInfo = {player_id, n, amount, index};
+			unspawnedCoinPositions.put(index, coinInfo);
+			synchronized (numOfCoinsToSpawnLock){
+				numOfCoinsToSpawn++;
+				Log.d(TAG, "numOfCoinsToSpawn incremented to: " + numOfCoinsToSpawn);
+			}
+		}
+	}
+
+	public ArrayList<int[]> minePosition=new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -234,7 +246,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 				rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
 			}
 			Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
-		}
+	}
 		if (requestCode == RC_INVITATION_INBOX) {
 			if (resultCode != Activity.RESULT_OK) {
 				Log.w(TAG, "*** select players UI cancelled, " + resultCode);
@@ -293,8 +305,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	@Override
 	public void submitScore(int highScore) {
 		if (isSignedIn()) {
-			Games.Leaderboards.submitScore(mGoogleApiClient,
-					getString(R.string.leaderboard_highest), highScore);
+			Games.Leaderboards.submitScore(mGoogleApiClient, getString(R.string.leaderboard_highest), highScore);
 		}
 	}
 
@@ -364,9 +375,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		} else if (buf[0] == 'S') {
 			int id = buf[1];
 			playerStatus.put(id, String.valueOf((char) buf[2]));
-
-		} else if (buf[0] == 'c') { //coin collected by other player , format of msg {'c', index}
-			collectedIndex = buf[1];
+		}else if (buf[0]=='c'){ //coin collected by other player , format of msg {'c', index}
+			collectedIndex = buf[1]; //index of coin to be removed on this device
 			numOfCoinsToRemove++;
 
 		} else if (buf[0] == 'C') { //coin spawned by other player
@@ -382,18 +392,25 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 				minePosition.add(mineValue);
 			}
 
-		} else if (buf[0] == 't') { //test
+		}else if (buf[0]=='t'){ //test
 			int val = buf[1];
 			Toast.makeText(getApplicationContext(), "" + val, Toast.LENGTH_SHORT).show();
-
-		} else if (buf[0] == 'o') { //determining order of playerID
-			synchronized (playersMyIdHashcode) {
-				byte[] hashCodeArray = {buf[1], buf[2], buf[3], buf[4]}; //last 4 bytes store hashcode
+		}else if (buf[0]=='o'){ //determining order of playerID
+			synchronized (playersMyIdHashcode){
+				byte[] hashCodeArray = {buf[1],buf[2],buf[3],buf[4]}; //last 4 bytes store hashcode
 				playersMyIdHashcode.add(ByteBuffer.wrap(hashCodeArray).getInt()); //get int hashcode from other players
 			}
 			//at this point we haven't added the mMyIDhashcode of this device to playersMyIdHashcode yet hence the +1
 			if (playersMyIdHashcode.size() + 1 == mParticipants.size()) { //add a barrier so that mParticipants has been initialised else it is null
 				setPlayerId();
+			}
+		}else if(buf[0]=='M'){
+			int[] mineValue=new int[7];
+			for (int i=1;i<=7;i++){
+				mineValue[i-1]=(int)buf[i];
+			}
+			synchronized (minePosition){
+				minePosition.add(mineValue);
 			}
 		}
 	}
@@ -598,11 +615,11 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		synchronized (playersMyIdHashcode) {
 			playersMyIdHashcode.add(mMyIdHashcode);
 			Collections.sort(playersMyIdHashcode); // Sort the arraylist, last element is the largest
-			for (int i = 0; i < playersMyIdHashcode.size(); i++) {
-				Toast.makeText(getApplicationContext(), "hashcode: " + playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
-				if (mMyIdHashcode == playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))) { //gets the last item in first iteration, largest for an ascending sort
+			for(int i=0; i<playersMyIdHashcode.size(); i++){
+				//Toast.makeText(getApplicationContext(), "hashcode: "+playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
+				if(mMyIdHashcode==playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))){ //gets the last item in first iteration, largest for an ascending sort
 					playerId = i;
-					Toast.makeText(getApplicationContext(), "playerId assigned: " + playerId, Toast.LENGTH_LONG).show();
+					//Toast.makeText(getApplicationContext(), "playerId assigned: "+playerId, Toast.LENGTH_LONG).show();
 					//Toast.makeText(getApplicationContext(), "playersMy size: "+playersMyIdHashcode.size(), Toast.LENGTH_SHORT).show();
 					unspawnedIndex = unspawnedIndex + (i * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 
@@ -615,36 +632,18 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public int[] getSpawnedCoinPosition() {
-		synchronized (unspawnedCoinPositions) {
-			if (unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[0]) && playerId != 0) { //need to extract coin index from hashmap
-				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[0]); //retVal = {playerID, n, amount, index}
-				unspawnedGetIndexArray[0]++;
-				synchronized (numOfCoinsToSpawnLock) {
-					numOfCoinsToSpawn--;
+		synchronized (unspawnedCoinPositions){
+			for(int i = 0; i < 4; i++){
+				if(unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[i]) && playerId!=i) { //need to extract coin index from hashmap
+					int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[i]); //retVal = {playerID, n, amount, index}
+					unspawnedGetIndexArray[i]++;
+					synchronized (numOfCoinsToSpawnLock) {
+						numOfCoinsToSpawn--;
+					}
+					return retVal;
 				}
-				return retVal;
-			} else if (unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[1]) && playerId != 1) { //need to extract coin index from hashmap
-				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[1]); //retVal = {playerID, n, amount, index}
-				unspawnedGetIndexArray[1]++;
-				synchronized (numOfCoinsToSpawnLock) {
-					numOfCoinsToSpawn--;
-				}
-				return retVal;
-			} else if (unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[2]) && playerId != 2) { //need to extract coin index from hashmap
-				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[2]); //retVal = {playerID, n, amount, index}
-				unspawnedGetIndexArray[2]++;
-				synchronized (numOfCoinsToSpawnLock) {
-					numOfCoinsToSpawn--;
-				}
-				return retVal;
-			} else if (unspawnedCoinPositions.containsKey(unspawnedGetIndex3) && playerId != 3) { //need to extract coin index from hashmap
-				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndex3); //retVal = {playerID, n, amount, index}
-				unspawnedGetIndex3++;
-				synchronized (numOfCoinsToSpawnLock) {
-					numOfCoinsToSpawn--;
-				}
-				return retVal; //{playerID, n, amount, index}
 			}
+
 			return null;
 
 		}
@@ -663,8 +662,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public int numOfNewCoinsLeftToSpawn() {
-		synchronized (numOfCoinsToSpawnLock) {
-			Log.d(TAG, "return numOfCoinsToSpawn: " + numOfCoinsToSpawn);
+		synchronized (numOfCoinsToSpawnLock){
+			//Log.d(TAG, "return numOfCoinsToSpawn: " + numOfCoinsToSpawn);
 			return numOfCoinsToSpawn;
 		}
 
@@ -678,49 +677,18 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	public void receiveCoinSpawnMsg(byte[] mMsgBuf) {
 		//need to spawn coins created by other players
 		// mMsgBuf format is: second byte - x position, third byte - y position, fourth byte is amount
-		synchronized (unspawnedCoinPositions) {
-			int player_Id = (int) mMsgBuf[1]; //playerID
+
+		synchronized (unspawnedCoinPositions){
+			int player_Id = (int) mMsgBuf[1]; //playerID or x coin coordinate if coin is spawned by player's death
 			//Log.d(TAG, "playerID: " + coinInfo[0]);
-			int n = (int) mMsgBuf[2]; //n
+			int n = (int) mMsgBuf[2]; //n or y coin coordinate if coin is spawned by player's death
 			//Log.d(TAG, "n: " + coinInfo[1]);
 			int index = (int) mMsgBuf[3];
 			int amount = (int) mMsgBuf[4]; //amount
 			//Log.d(TAG, "amount: " + coinInfo[2]);
 
-			putCoinInHashmap(player_Id, n, amount, index);
-
-			//unspawnedCoinPositions.put(unspawnedIndex, coinInfo);
-			//unspawnedIndex++;
-			synchronized (numOfCoinsToSpawnLock) {
-				numOfCoinsToSpawn++;
-				Log.d(TAG, "numOfCoinsToSpawn incremented to: " + numOfCoinsToSpawn);
-			}
+			putOtherPlayerCoinInHashmap(player_Id, n, amount, index);
 		}
-	}
-
-	public void receiveCoinCollectedMsg(byte[] mMsgBuf) {
-		//need to remove coins collected by other players
-		// mMsgBuf format is: second byte - x position, third byte - y position, fourth byte is amount
-		int[] coinInfo = new int[3];
-		coinInfo[0] = mMsgBuf[1]; //x position
-		coinInfo[1] = mMsgBuf[2]; //y position
-		coinInfo[2] = mMsgBuf[3]; //amount
-
-		collectedCoinPositions.put(collectedIndex, coinInfo);
-		collectedIndex++;
-
-	}
-
-	public void sendCoinCollectedMsg() {
-		//need to get other devices to remove coins collected by this device's player
-		// mMsgBuf format is: first byte - 'c',second byte - x position, third byte - y position, fourth byte is amount
-
-	}
-
-	public void sendCoinSpawnedMsg() {
-		//need to get other devices to spawn coins created by this device
-		// mMsgBuf format is: first byte - 'C',second byte - x position, third byte - y position, fourth byte is amount
-
 	}
 
 	public byte[] toBytesInitMsg(int i) {
