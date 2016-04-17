@@ -181,7 +181,11 @@ public class Player extends Sprite {
         if (TechiesWorld.playServices.getMyPosition()==0){
             bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
         }else if (TechiesWorld.playServices.getMyPosition()==1){
-            bdef.position.set(880 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+            bdef.position.set(900 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
+        }else if (TechiesWorld.playServices.getMyPosition()==2){
+            bdef.position.set(140 / TechiesWorld.PPM, 900 / TechiesWorld.PPM);
+        }else if (TechiesWorld.playServices.getMyPosition()==3){
+            bdef.position.set(900 / TechiesWorld.PPM, 900 / TechiesWorld.PPM);
         }
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);

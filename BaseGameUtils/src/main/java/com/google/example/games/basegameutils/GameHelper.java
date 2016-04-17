@@ -39,15 +39,28 @@ import com.google.android.gms.games.Games.GamesOptions;
 import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.request.GameRequest;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.Plus.PlusOptions;
 
 public class GameHelper implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, OnInvitationReceivedListener {
 
     static final String TAG = "GameHelper";
+
+    @Override
+    public void onInvitationReceived(Invitation invitation) {
+        mInvitation=invitation;
+    }
+
+    @Override
+    public void onInvitationRemoved(String s) {
+        if (mInvitation.getInvitationId().equals(s)&&mInvitation.getInvitationId()!=null){
+            mInvitation=null;
+        }
+    }
 
     /** Listener for sign-in success or failure events. */
     public interface GameHelperListener {
@@ -699,6 +712,7 @@ public class GameHelper implements GoogleApiClient.ConnectionCallbacks,
     public void onConnected(Bundle connectionHint) {
         debugLog("onConnected: connected!");
 
+        Games.Invitations.registerInvitationListener(mGoogleApiClient,this);
         if (connectionHint != null) {
             debugLog("onConnected: connection hint provided. Checking for invite.");
             Invitation inv = connectionHint

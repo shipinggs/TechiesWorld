@@ -10,9 +10,14 @@ import android.widget.Toast;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.GamesStatusCodes;
+import com.google.android.gms.games.multiplayer.Invitation;
+import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
@@ -22,10 +27,8 @@ import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListene
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.example.games.basegameutils.BaseGameUtils;
 import com.google.example.games.basegameutils.GameHelper;
-import com.shiping.gametest.Screens.PlayScreen;
 
 
-import com.shiping.gametest.Sprites.Items.Mine;
 
 
 import java.nio.ByteBuffer;
@@ -34,45 +37,64 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AndroidLauncher extends AndroidApplication implements PlayServices,
-		RealTimeMessageReceivedListener, RoomStatusUpdateListener, RoomUpdateListener{
+		RealTimeMessageReceivedListener, RoomStatusUpdateListener, RoomUpdateListener
+		, GoogleApiClient.ConnectionCallbacks,OnInvitationReceivedListener,GoogleApiClient.OnConnectionFailedListener {
 
-	private GameHelper gameHelper;
-	private final static int requestCode=1;
-	String mRoomId=null;
+//	private GameHelper gameHelper;
+	private final static int requestCode = 1;
+	String mRoomId = null;
 
-	final static String TAG="TechiesWorld";
-	private boolean ableToStart=false;
+	final static String TAG = "TechiesWorld";
+	private boolean ableToStart = false;
 
 	// arbitrary request code for the waiting room UI.
 	// This can be any integer that's unique in your Activity.
+	final static int RC_SELECT_PLAYERS = 10000;
+	final static int RC_INVITATION_INBOX = 10001;
 	final static int RC_WAITING_ROOM = 10002;
+
+	// Request code used to invoke sign in user interactions.
+	private static final int RC_SIGN_IN = 9001;
+
+	// Client used to interact with Google APIs.
+	private GoogleApiClient mGoogleApiClient;
+
+	// Are we currently resolving a connection failure?
+	private boolean mResolvingConnectionFailure = false;
+
+	// Has the user clicked the sign-in button?
+	private boolean mSignInClicked = false;
+
+	private boolean mAutoStartSignInFlow = true;
 
 	// The participants in the currently active game
 	ArrayList<Participant> mParticipants = null;
 
 	//variables used to assign playerID (0-3)
-	String mMyId=null;
-	int mMyIdHashcode=0;
+	String mMyId = null;
+	int mMyIdHashcode = 0;
 	ArrayList<Integer> playersMyIdHashcode = new ArrayList<>(); //stores hashcode of all player's mMyID
 	int playerId = -1; //will be assigned a value of 0-3 later
 
-	Participant me=null;
+	Participant me = null;
 
-	int myPosition=-1;
+	int myPosition = -1;
 
-	Map<Integer,int[]> playerPositions=new HashMap<>();
+	Map<Integer, int[]> playerPositions = new HashMap<>();
 
-	Map<Integer, String> playerStatus=new HashMap<>();
+	Map<Integer, String> playerStatus = new HashMap<>();
 
-	public byte[] receivedPlayer;
+	boolean mWaitingRoomFinishedFromCode = false;
+
+	final static int MIN_PLAYERS = 2;
 
 
+	String mIncomingInvitationId = null;
 
 	//Variables for coins
-	Map<Integer,int[]> unspawnedCoinPositions=new HashMap<>();
+	Map<Integer, int[]> unspawnedCoinPositions = new HashMap<>();
 	int unspawnedIndex = -128; //lowest value of a byte
 
 	int unspawnedGetIndex = -128;
@@ -83,7 +105,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	int[] unspawnedGetIndexArray = {-128, -64, -1, 63};
 	Object numOfCoinsToSpawnLock = new Object();
 
-	Map<Integer,int[]> collectedCoinPositions=new HashMap<>();
+	Map<Integer, int[]> collectedCoinPositions = new HashMap<>();
 	int collectedIndex = 0;
 	int numOfCoinsToRemove = 0;
 
@@ -99,232 +121,280 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public void putCoinInHashmap(int player_id, int n, int amount, int index) {
-		synchronized (unspawnedCoinPositions){
+		synchronized (unspawnedCoinPositions) {
 			int[] coinInfo = {player_id, n, amount, index};
 			unspawnedCoinPositions.put(index, coinInfo);
 		}
 	}
 
 
-
-	public ArrayList<int[]> minePosition=new ArrayList<>();
-
+	public ArrayList<int[]> minePosition = new ArrayList<>();
 
 
 	@Override
-	protected void onCreate (Bundle savedInstanceState) {
-		gameHelper = new GameHelper(this, GameHelper.CLIENT_GAMES);
-		gameHelper.enableDebugLog(false);
-		GameHelper.GameHelperListener gameHelperListener = new GameHelper.GameHelperListener()
-		{
-			@Override
-			public void onSignInFailed(){
-				Toast.makeText(getApplicationContext(), "sign in failed", Toast.LENGTH_SHORT).show();
-			}
-
-			@Override
-			public void onSignInSucceeded(){
-				Toast.makeText(getApplicationContext(), "sign in succeeded", Toast.LENGTH_SHORT).show();
-			}
-		};
-
-		gameHelper.setup(gameHelperListener);
+	protected void onCreate(Bundle savedInstanceState) {
+//		gameHelper = new GameHelper(this, GameHelper.CLIENT_GAMES);
+//		gameHelper.enableDebugLog(false);
+//		GameHelper.GameHelperListener gameHelperListener = new GameHelper.GameHelperListener() {
+//			@Override
+//			public void onSignInFailed() {
+//				Toast.makeText(getApplicationContext(), "sign in failed", Toast.LENGTH_SHORT).show();
+//			}
+//
+//			@Override
+//			public void onSignInSucceeded() {
+//				Toast.makeText(getApplicationContext(), "sign in succeeded", Toast.LENGTH_SHORT).show();
+//			}
+//		};
+//
+//		gameHelper.setup(gameHelperListener);
 		super.onCreate(savedInstanceState);
+		mGoogleApiClient=new GoogleApiClient.Builder(this)
+				.addConnectionCallbacks(this)
+				.addOnConnectionFailedListener(this)
+				.addApi(Games.API).addScope(Games.SCOPE_GAMES)
+				.build();
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		initialize(new TechiesWorld(this), config);
 	}
 
+
 	@Override
-	protected void onStart()
-	{
+	protected void onStart() {
+		if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+			Log.w(TAG,
+					"GameHelper: client was already connected on onStart()");
+		} else {
+			Log.d(TAG,"Connecting client.");
+			mGoogleApiClient.connect();
+		}
 		super.onStart();
-		gameHelper.onStart(this);
 	}
 
 	@Override
 	protected void onStop() {
+		Log.d(TAG, "**** got onStop");
+
+		// if we're in a room, leave it.
+		leaveRoom();
 		super.onStop();
-		gameHelper.onStop();
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == RC_WAITING_ROOM){
-			if (resultCode== Activity.RESULT_OK){
-				if (mParticipants!=null){
-					myPosition=mParticipants.indexOf(me);
-					ableToStart=true;
+		if (requestCode == RC_WAITING_ROOM) {
+			if (mWaitingRoomFinishedFromCode){
+				if (mParticipants != null) {
+					myPosition = mParticipants.indexOf(me);
+					ableToStart = true;
 				}
-
-			}else if (resultCode== GamesActivityResultCodes.RESULT_LEFT_ROOM){
+				return;
+			}
+			if (resultCode == Activity.RESULT_OK) {
+				byte[] bytes=new byte[1];
+				bytes[0]=(byte) 'A';
+				broadcastReliableMsg(bytes);
+				if (mParticipants != null) {
+					myPosition = mParticipants.indexOf(me);
+					ableToStart = true;
+				}
+			} else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
 				leaveRoom();
-			}else if (resultCode==Activity.RESULT_CANCELED){
+			} else if (resultCode == Activity.RESULT_CANCELED) {
 				leaveRoom();
+			}
+		}
+		if (requestCode == RC_SELECT_PLAYERS) {
+			if (resultCode != Activity.RESULT_OK) {
+				Log.w(TAG, "*** select players UI cancelled, " + resultCode);
+				leaveRoom();
+				return;
+			}
+			// get the invitee list
+			Bundle extras = data.getExtras();
+			final ArrayList<String> invitees = data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
+			Log.d(TAG, "Invitee count: " + invitees.size());
+			// get the automatch criteria
+			Bundle autoMatchCriteria = null;
+			int minAutoMatchPlayers = data.getIntExtra(Multiplayer.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
+			int maxAutoMatchPlayers = data.getIntExtra(Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
+			if (minAutoMatchPlayers > 0 || maxAutoMatchPlayers > 0) {
+				autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
+						minAutoMatchPlayers, maxAutoMatchPlayers, 0);
+				Log.d(TAG, "Automatch criteria: " + autoMatchCriteria);
+			}
+			// create the room
+			Log.d(TAG, "Creating room...");
+			RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
+			rtmConfigBuilder.addPlayersToInvite(invitees);
+			rtmConfigBuilder.setMessageReceivedListener(this);
+			rtmConfigBuilder.setRoomStatusUpdateListener(this);
+			if (autoMatchCriteria != null) {
+				rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
+			}
+			Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
+		}
+		if (requestCode == RC_INVITATION_INBOX) {
+			if (resultCode != Activity.RESULT_OK) {
+				Log.w(TAG, "*** select players UI cancelled, " + resultCode);
+				leaveRoom();
+				return;
+			}
+			Log.d(TAG, "Invitation inbox UI succeeded.");
+			Bundle extras = data.getExtras();
+			Invitation inv = extras.getParcelable(Multiplayer.EXTRA_INVITATION);
+			acceptInviteToRoom(inv.getInvitationId());
+		}
+		if (requestCode==RC_SIGN_IN){
+			Log.d(TAG, "onActivityResult with requestCode == RC_SIGN_IN, responseCode="
+					+ resultCode + ", intent=" + data);
+			mSignInClicked = false;
+			mResolvingConnectionFailure = false;
+			if (resultCode == RESULT_OK) {
+				mGoogleApiClient.connect();
+			} else {
+				BaseGameUtils.showActivityResultError(this,requestCode,resultCode, 0);
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
-	@Override
-	public void signIn()
-	{
-		try
-		{
-			runOnUiThread(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					gameHelper.beginUserInitiatedSignIn();
-				}
-			});
-		}
-		catch (Exception e)
-		{
-			Gdx.app.log("MainActivity", "Log in failed: " + e.getMessage() + ".");
-		}
+
+	void acceptInviteToRoom(String invId) {
+		// accept the invitation
+		Log.d(TAG, "Accepting invitation: " + invId);
+		RoomConfig.Builder roomConfigBuilder = RoomConfig.builder(this);
+		roomConfigBuilder.setInvitationIdToAccept(invId)
+				.setMessageReceivedListener(this)
+				.setRoomStatusUpdateListener(this);
+
+		Games.RealTimeMultiplayer.join(mGoogleApiClient, roomConfigBuilder.build());
 	}
 
 	@Override
-	public void signOut()
-	{
-		try
-		{
-			runOnUiThread(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					gameHelper.signOut();
-				}
-			});
-		}
-		catch (Exception e)
-		{
-			Gdx.app.log("MainActivity", "Log out failed: " + e.getMessage() + ".");
-		}
+	public void signIn() {
+		Log.d(TAG, "Sign-in button clicked");
+		mSignInClicked = true;
+		mGoogleApiClient.connect();
 	}
 
 	@Override
-	public void rateGame()
-	{
-		String str = "Your PlayStore Link";
-		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(str)));
+	public void signOut() {
+		// user wants to sign out
+		// sign out.
+		Log.d(TAG, "Sign-out button clicked");
+		mSignInClicked = false;
+		Games.signOut(mGoogleApiClient);
+		mGoogleApiClient.disconnect();
 	}
 
-	@Override
-	public void unlockAchievement()
-	{
-		Games.Achievements.unlock(gameHelper.getApiClient(),
-				getString(R.string.achievement_dum_dum));
-	}
+
 
 	@Override
 	public void submitScore(int highScore) {
-		if (isSignedIn())
-		{
-			Games.Leaderboards.submitScore(gameHelper.getApiClient(),
+		if (isSignedIn()) {
+			Games.Leaderboards.submitScore(mGoogleApiClient,
 					getString(R.string.leaderboard_highest), highScore);
 		}
 	}
 
 	@Override
-	public void showAchievement()
-	{
-		if (isSignedIn() == true)
-		{
-			startActivityForResult(Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()), requestCode);
-		}
-		else
-		{
+	public void showAchievement() {
+		if (isSignedIn()) {
+			startActivityForResult(Games.Achievements.getAchievementsIntent(mGoogleApiClient), requestCode);
+		} else {
 			signIn();
 		}
 	}
 
 	@Override
-	public void showScore()
-	{
-		if (isSignedIn())
-		{
-			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(),
+	public void showScore() {
+		if (isSignedIn()) {
+			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mGoogleApiClient,
 					getString(R.string.leaderboard_highest)), requestCode);
-		}
-		else
-		{
+		} else {
 			signIn();
 		}
 	}
 
 	@Override
-	public boolean isSignedIn()
-	{
-		return gameHelper.isSignedIn();
+	public boolean isSignedIn() {
+		return mGoogleApiClient.isConnected();
 	}
 
 
 	@Override
-	public void startQuickGame(){
-		final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 1;
+	public void startQuickGame() {
+		final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 3;
 		Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,
 				MAX_OPPONENTS, 0);
 		RoomConfig.Builder roomConfigBuilder = RoomConfig.builder(this);
 		roomConfigBuilder.setMessageReceivedListener(this);
 		roomConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
-		RoomConfig roomConfig= roomConfigBuilder.build();
+		RoomConfig roomConfig = roomConfigBuilder.build();
 
 		//create room:
-		Games.RealTimeMultiplayer.create(gameHelper.getApiClient(), roomConfig);
+		Games.RealTimeMultiplayer.create(mGoogleApiClient, roomConfig);
+
+	}
+
+	public void invitePlayer() {
+		Intent intentInvite = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 3);
+		startActivityForResult(intentInvite, RC_SELECT_PLAYERS);
+	}
+
+	public void showInvitationBox() {
+		Intent intentBox = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
+		startActivityForResult(intentBox, RC_INVITATION_INBOX);
 	}
 
 	@Override
 	public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
-		byte[] buf=realTimeMessage.getMessageData();
-		if (buf[0]=='P'){
-			int id=buf[1];
-			int[] position=new int[4];
-			for (int i=2;i<=5;i++){
-				position[i-2]=(int)buf[i];
+		byte[] buf = realTimeMessage.getMessageData();
+		if (buf[0]=='A'){
+			mWaitingRoomFinishedFromCode=true;
+			finishActivity(RC_WAITING_ROOM);
+		}else if (buf[0] == 'P') {
+			int id = buf[1];
+			int[] position = new int[4];
+			for (int i = 2; i <= 5; i++) {
+				position[i - 2] = (int) buf[i];
 			}
 			playerPositions.put(id, position);
-		}else if (buf[0]=='S'){
-			int id=buf[1];
-			playerStatus.put(id, String.valueOf((char)buf[2]));
+		} else if (buf[0] == 'S') {
+			int id = buf[1];
+			playerStatus.put(id, String.valueOf((char) buf[2]));
 
-		}else if (buf[0]=='c'){ //coin collected by other player , format of msg {'c', index}
+		} else if (buf[0] == 'c') { //coin collected by other player , format of msg {'c', index}
 			collectedIndex = buf[1];
 			numOfCoinsToRemove++;
 
-		}else if (buf[0]=='C'){ //coin spawned by other player
+		} else if (buf[0] == 'C') { //coin spawned by other player
 			receiveCoinSpawnMsg(buf);
 			Log.d(TAG, "received coin spawn msg");
 
-		}
-		else if (buf[0]=='t'){ //test
-			int val = buf[1];
-			Toast.makeText(getApplicationContext(), ""+val, Toast.LENGTH_SHORT).show();
-
-		}
-		else if (buf[0]=='o'){ //determining order of playerID
-			synchronized (playersMyIdHashcode){
-				byte[] hashCodeArray = {buf[1],buf[2],buf[3],buf[4]}; //last 4 bytes store hashcode
-				playersMyIdHashcode.add(ByteBuffer.wrap(hashCodeArray).getInt()); //get int hashcode from other players
+		} else if (buf[0] == 'M') {
+			int[] mineValue = new int[7];
+			for (int i = 1; i <= 7; i++) {
+				mineValue[i - 1] = (int) buf[i];
 			}
-			//at this point we haven't added the mMyIDhashcode of this device to playersMyIdHashcode yet hence the +1
-			if(playersMyIdHashcode.size()+1==mParticipants.size()){ //add a barrier so that mParticipants has been initialised else it is null
-				setPlayerId();
-			}
-
-
-		}else if(buf[0]=='M'){
-			int[] mineValue=new int[7];
-			for (int i=1;i<=7;i++){
-				mineValue[i-1]=(int)buf[i];
-			}
-			synchronized (minePosition){
+			synchronized (minePosition) {
 				minePosition.add(mineValue);
 			}
 
+		} else if (buf[0] == 't') { //test
+			int val = buf[1];
+			Toast.makeText(getApplicationContext(), "" + val, Toast.LENGTH_SHORT).show();
+
+		} else if (buf[0] == 'o') { //determining order of playerID
+			synchronized (playersMyIdHashcode) {
+				byte[] hashCodeArray = {buf[1], buf[2], buf[3], buf[4]}; //last 4 bytes store hashcode
+				playersMyIdHashcode.add(ByteBuffer.wrap(hashCodeArray).getInt()); //get int hashcode from other players
+			}
+			//at this point we haven't added the mMyIDhashcode of this device to playersMyIdHashcode yet hence the +1
+			if (playersMyIdHashcode.size() + 1 == mParticipants.size()) { //add a barrier so that mParticipants has been initialised else it is null
+				setPlayerId();
+			}
 		}
 	}
 
@@ -344,10 +414,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		mRoomId = room.getRoomId();
 
 		// show the waiting room UI
-		Intent i= Games.RealTimeMultiplayer.getWaitingRoomIntent(gameHelper.getApiClient(), room, Integer.MAX_VALUE);
+		Intent i = Games.RealTimeMultiplayer.getWaitingRoomIntent(mGoogleApiClient, room, MIN_PLAYERS);
 		startActivityForResult(i, RC_WAITING_ROOM);
 	}
-
 
 
 	@Override
@@ -358,7 +427,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 
 		// show the waiting room UI
-		Intent i= Games.RealTimeMultiplayer.getWaitingRoomIntent(gameHelper.getApiClient(), room, Integer.MAX_VALUE);
+		Intent i = Games.RealTimeMultiplayer.getWaitingRoomIntent(mGoogleApiClient, room, MIN_PLAYERS);
 		startActivityForResult(i, RC_WAITING_ROOM);
 	}
 
@@ -373,19 +442,18 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			showGameError();
 			return;
 		}
-		synchronized (playersMyIdHashcode){
-			mParticipants=room.getParticipants();
-			mMyId = room.getParticipantId(Games.Players.getCurrentPlayerId(gameHelper.getApiClient()));
-			me=room.getParticipant(mMyId);
+		synchronized (playersMyIdHashcode) {
+			mParticipants = room.getParticipants();
+			mMyId = room.getParticipantId(Games.Players.getCurrentPlayerId(mGoogleApiClient));
+			me = room.getParticipant(mMyId);
 			calcMyIdHashCode();
 
 			byte[] initOrderMsg = toBytesInitMsg(mMyIdHashcode);
 			broadcastMsg(initOrderMsg);
 		}
-
 	}
 
-	public boolean getAbleToStart(){
+	public boolean getAbleToStart() {
 		return ableToStart;
 	}
 
@@ -421,11 +489,11 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public void onConnectedToRoom(Room room) {
-		mParticipants=room.getParticipants();
-		mMyId = room.getParticipantId(Games.Players.getCurrentPlayerId(gameHelper.getApiClient()));
-		me=room.getParticipant(mMyId);
-		if (mRoomId==null){
-			mRoomId=room.getRoomId();
+		mParticipants = room.getParticipants();
+		mMyId = room.getParticipantId(Games.Players.getCurrentPlayerId(mGoogleApiClient));
+		me = room.getParticipant(mMyId);
+		if (mRoomId == null) {
+			mRoomId = room.getRoomId();
 		}
 
 		// print out the list of participants (for debug purposes)
@@ -460,26 +528,28 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	}
 
-	void leaveRoom(){
-		if (mRoomId!=null){
-			Games.RealTimeMultiplayer.leave(gameHelper.getApiClient(),this,mRoomId);
-			mRoomId=null;
-			ableToStart=false;
+	void leaveRoom() {
+		if (mRoomId != null) {
+			Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
+			mRoomId = null;
+			ableToStart = false;
 		}
 	}
 
-	void updateRoom(Room room){
-		if (room!=null){
-			mParticipants=room.getParticipants();
-			me=room.getParticipant(mMyId);
+	void updateRoom(Room room) {
+		if (room != null) {
+			mParticipants = room.getParticipants();
 		}
+//		if (mParticipants!=null){
+//			me=room.getParticipant(mMyId);
+//		}
 	}
 
-	public void broadcastMsg(byte[] mMsgBuf){
-		if (mParticipants!=null){
-			for (Participant p:mParticipants){
-				if (!p.getParticipantId().equals(mMyId)){
-					Games.RealTimeMultiplayer.sendUnreliableMessage(gameHelper.getApiClient(), mMsgBuf, mRoomId,
+	public void broadcastMsg(byte[] mMsgBuf) {
+		if (mParticipants != null) {
+			for (Participant p : mParticipants) {
+				if (!p.getParticipantId().equals(mMyId)) {
+					Games.RealTimeMultiplayer.sendUnreliableMessage(mGoogleApiClient, mMsgBuf, mRoomId,
 							p.getParticipantId());
 				}
 			}
@@ -487,54 +557,54 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	}
 
-	public void broadcastReliableMsg(byte[] mMsgBuf){
-		if (mParticipants!=null){
-			for (Participant p:mParticipants){
-				if (!p.getParticipantId().equals(mMyId)){
-					/*Games.RealTimeMultiplayer.sendReliableMessage(gameHelper.getApiClient(),mMsgBuf,mRoomId,
-							p.getParticipantId());*/
+	public void broadcastReliableMsg(byte[] mMsgBuf) {
+		if (mParticipants != null) {
+			for (Participant p : mParticipants) {
+				if (!p.getParticipantId().equals(mMyId)) {
+					Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, mMsgBuf, mRoomId,
+							p.getParticipantId());
 				}
 			}
 		}
 
 	}
 
-	public void destroy(){
+	public void destroy() {
 		this.destroy();
 	}
 
-	public int getMyPosition(){
+	public int getMyPosition() {
 		return myPosition;
 	}
 
-	public int[] getPlayerPosition(int id){
+	public int[] getPlayerPosition(int id) {
 		return playerPositions.get(id);
 	}
 
-	public String getPlayerStatus(int id){
+	public String getPlayerStatus(int id) {
 		return playerStatus.get(id);
 	}
 
 
 	@Override
 	public int getPlayerId() { //synced so that playscreen must wait and cannot be instantiated until playerid is ready
-		synchronized (playersMyIdHashcode){
+		synchronized (playersMyIdHashcode) {
 			return playerId;
 		}
 	}
 
 	public void setPlayerId() { //obtain a playerID (0-3) for this device's player
 		//largest hashcode ranked at rank0, playerID = 0
-		synchronized (playersMyIdHashcode){
+		synchronized (playersMyIdHashcode) {
 			playersMyIdHashcode.add(mMyIdHashcode);
 			Collections.sort(playersMyIdHashcode); // Sort the arraylist, last element is the largest
-			for(int i=0; i<playersMyIdHashcode.size(); i++){
-				Toast.makeText(getApplicationContext(), "hashcode: "+playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
-				if(mMyIdHashcode==playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))){ //gets the last item in first iteration, largest for an ascending sort
+			for (int i = 0; i < playersMyIdHashcode.size(); i++) {
+				Toast.makeText(getApplicationContext(), "hashcode: " + playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
+				if (mMyIdHashcode == playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))) { //gets the last item in first iteration, largest for an ascending sort
 					playerId = i;
-					Toast.makeText(getApplicationContext(), "playerId assigned: "+playerId, Toast.LENGTH_LONG).show();
+					Toast.makeText(getApplicationContext(), "playerId assigned: " + playerId, Toast.LENGTH_LONG).show();
 					//Toast.makeText(getApplicationContext(), "playersMy size: "+playersMyIdHashcode.size(), Toast.LENGTH_SHORT).show();
-					unspawnedIndex = unspawnedIndex + (i*64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
+					unspawnedIndex = unspawnedIndex + (i * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 
 				}
 
@@ -545,32 +615,32 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public int[] getSpawnedCoinPosition() {
-		synchronized (unspawnedCoinPositions){
-			if(unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[0]) && playerId!=0){ //need to extract coin index from hashmap
+		synchronized (unspawnedCoinPositions) {
+			if (unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[0]) && playerId != 0) { //need to extract coin index from hashmap
 				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[0]); //retVal = {playerID, n, amount, index}
 				unspawnedGetIndexArray[0]++;
-				synchronized (numOfCoinsToSpawnLock){
+				synchronized (numOfCoinsToSpawnLock) {
 					numOfCoinsToSpawn--;
 				}
 				return retVal;
-			}else if(unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[1]) && playerId!=1){ //need to extract coin index from hashmap
+			} else if (unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[1]) && playerId != 1) { //need to extract coin index from hashmap
 				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[1]); //retVal = {playerID, n, amount, index}
 				unspawnedGetIndexArray[1]++;
-				synchronized (numOfCoinsToSpawnLock){
+				synchronized (numOfCoinsToSpawnLock) {
 					numOfCoinsToSpawn--;
 				}
 				return retVal;
-			}else if(unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[2]) && playerId!=2){ //need to extract coin index from hashmap
+			} else if (unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[2]) && playerId != 2) { //need to extract coin index from hashmap
 				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[2]); //retVal = {playerID, n, amount, index}
 				unspawnedGetIndexArray[2]++;
-				synchronized (numOfCoinsToSpawnLock){
+				synchronized (numOfCoinsToSpawnLock) {
 					numOfCoinsToSpawn--;
 				}
 				return retVal;
-			}else if(unspawnedCoinPositions.containsKey(unspawnedGetIndex3) && playerId!=3){ //need to extract coin index from hashmap
+			} else if (unspawnedCoinPositions.containsKey(unspawnedGetIndex3) && playerId != 3) { //need to extract coin index from hashmap
 				int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndex3); //retVal = {playerID, n, amount, index}
 				unspawnedGetIndex3++;
-				synchronized (numOfCoinsToSpawnLock){
+				synchronized (numOfCoinsToSpawnLock) {
 					numOfCoinsToSpawn--;
 				}
 				return retVal; //{playerID, n, amount, index}
@@ -593,8 +663,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public int numOfNewCoinsLeftToSpawn() {
-		synchronized (numOfCoinsToSpawnLock){
-			Log.d(TAG, "return numOfCoinsToSpawn: "+numOfCoinsToSpawn);
+		synchronized (numOfCoinsToSpawnLock) {
+			Log.d(TAG, "return numOfCoinsToSpawn: " + numOfCoinsToSpawn);
 			return numOfCoinsToSpawn;
 		}
 
@@ -605,10 +675,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		return collectedIndex;
 	}
 
-	public void receiveCoinSpawnMsg(byte[] mMsgBuf){
+	public void receiveCoinSpawnMsg(byte[] mMsgBuf) {
 		//need to spawn coins created by other players
 		// mMsgBuf format is: second byte - x position, third byte - y position, fourth byte is amount
-		synchronized (unspawnedCoinPositions){
+		synchronized (unspawnedCoinPositions) {
 			int player_Id = (int) mMsgBuf[1]; //playerID
 			//Log.d(TAG, "playerID: " + coinInfo[0]);
 			int n = (int) mMsgBuf[2]; //n
@@ -621,14 +691,14 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 			//unspawnedCoinPositions.put(unspawnedIndex, coinInfo);
 			//unspawnedIndex++;
-			synchronized (numOfCoinsToSpawnLock){
+			synchronized (numOfCoinsToSpawnLock) {
 				numOfCoinsToSpawn++;
 				Log.d(TAG, "numOfCoinsToSpawn incremented to: " + numOfCoinsToSpawn);
 			}
 		}
 	}
 
-	public void receiveCoinCollectedMsg(byte[] mMsgBuf){
+	public void receiveCoinCollectedMsg(byte[] mMsgBuf) {
 		//need to remove coins collected by other players
 		// mMsgBuf format is: second byte - x position, third byte - y position, fourth byte is amount
 		int[] coinInfo = new int[3];
@@ -641,13 +711,13 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	}
 
-	public void sendCoinCollectedMsg(){
+	public void sendCoinCollectedMsg() {
 		//need to get other devices to remove coins collected by this device's player
 		// mMsgBuf format is: first byte - 'c',second byte - x position, third byte - y position, fourth byte is amount
 
 	}
 
-	public void sendCoinSpawnedMsg(){
+	public void sendCoinSpawnedMsg() {
 		//need to get other devices to spawn coins created by this device
 		// mMsgBuf format is: first byte - 'C',second byte - x position, third byte - y position, fourth byte is amount
 
@@ -665,25 +735,75 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		return result;
 	}
 
-	public void calcMyIdHashCode(){
+	public void calcMyIdHashCode() {
 		mMyIdHashcode = mMyId.hashCode();
 	}
 
-	public ArrayList<int[]> getMinePositionAndClear(){
-		synchronized (minePosition){
-			ArrayList<int[]> tempArray=new ArrayList<>(minePosition);
+	public ArrayList<int[]> getMinePositionAndClear() {
+		synchronized (minePosition) {
+			ArrayList<int[]> tempArray = new ArrayList<>(minePosition);
 			minePosition.clear();
 			return tempArray;
 		}
 	}
 
-	public boolean mineIsEmpty(){
-		synchronized (minePosition){
+	public boolean mineIsEmpty() {
+		synchronized (minePosition) {
 			return minePosition.isEmpty();
 		}
 	}
 
+	@Override
+	public void onConnected(Bundle connectionHint) {
+		Log.d(TAG, "onConnected() called. Sign in successful!");
 
+		Log.d(TAG, "Sign-in succeeded.");
+		Games.Invitations.registerInvitationListener(mGoogleApiClient, this);
 
+		if (connectionHint != null) {
+			Log.d(TAG, "onConnected: connection hint provided. Checking for invite.");
+			Invitation inv = connectionHint
+					.getParcelable(Multiplayer.EXTRA_INVITATION);
+			if (inv != null && inv.getInvitationId() != null) {
+				// retrieve and cache the invitation ID
+				// retrieve and cache the invitation ID
+				Log.d(TAG, "onConnected: connection hint has a room invite!");
+				acceptInviteToRoom(inv.getInvitationId());
+			}
+		}
 
+	}
+
+	@Override
+	public void onConnectionSuspended(int i) {
+		Log.d(TAG, "onConnectionSuspended() called. Trying to reconnect.");
+		mGoogleApiClient.connect();
+	}
+
+	@Override
+	public void onInvitationReceived(Invitation invitation) {
+		Toast.makeText(AndroidLauncher.this, "Invitation received", Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	public void onInvitationRemoved(String s) {
+
+	}
+
+	@Override
+	public void onConnectionFailed(ConnectionResult connectionResult) {
+		Log.d(TAG, "onConnectionFailed() called, result: " + connectionResult);
+
+		if (mResolvingConnectionFailure) {
+			Log.d(TAG, "onConnectionFailed() ignoring connection failure; already resolving.");
+			return;
+		}
+
+		if (mSignInClicked || mAutoStartSignInFlow) {
+			mAutoStartSignInFlow = false;
+			mSignInClicked = false;
+			mResolvingConnectionFailure = BaseGameUtils.resolveConnectionFailure(this, mGoogleApiClient,
+					connectionResult, RC_SIGN_IN, "Sign in error");
+		}
+	}
 }

@@ -28,6 +28,7 @@ public class MenuScreen implements Screen {
     private Stage stage; //** stage holds the Button **//
     private TextButton logoutBtn;
     private TextButton startGameBtn;
+    private TextButton invitationBoxBtn;
     private Skin buttonSkin; //** images are used as skins of the button **//
     private BitmapFont font; //** same as that used in Tut 7 **//
     private Texture calibriFontTexture;
@@ -73,6 +74,15 @@ public class MenuScreen implements Screen {
         startGameBtn.setPosition(100, 250); //** Button location **//
         startGameBtn.setHeight(200); //** Button Height **//
         startGameBtn.setWidth(400); //** Button Width **//
+
+        TextButton.TextButtonStyle styleInvitationBox=new TextButton.TextButtonStyle();
+        styleInvitationBox.up=buttonSkin.getDrawable("button_logout");
+        styleInvitationBox.down=buttonSkin.getDrawable("button_logout");
+        styleInvitationBox.font=font;
+        invitationBoxBtn=new TextButton("",styleInvitationBox);
+        invitationBoxBtn.setPosition(100,500);
+        invitationBoxBtn.setHeight(200);
+        invitationBoxBtn.setWidth(400);
 
     }
 
@@ -122,6 +132,19 @@ public class MenuScreen implements Screen {
 
         stage.addActor(startGameBtn);
 
+        invitationBoxBtn.addListener(new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Invitation box", "Pressed");
+                TechiesWorld.playServices.invitePlayer();
+                return true;
+            }
+
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Invitation box", "Released");
+            }
+        });
+
+        stage.addActor(invitationBoxBtn);
     }
 
     public void update(){
