@@ -590,7 +590,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		this.destroy();
 	}
 
-	public int getMyPosition() {
+	public int getMyID() {
 		return myPosition;
 	}
 
@@ -603,12 +603,12 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	}
 
 
-	@Override
-	public int getPlayerId() { //synced so that playscreen must wait and cannot be instantiated until playerid is ready
-		synchronized (playersMyIdHashcode) {
-			return playerId;
-		}
-	}
+//	@Override
+//	public int getPlayerId() { //synced so that playscreen must wait and cannot be instantiated until playerid is ready
+//		synchronized (playersMyIdHashcode) {
+//			return playerId;
+//		}
+//	}
 
 	public void setPlayerId() { //obtain a playerID (0-3) for this device's player
 		//largest hashcode ranked at rank0, playerID = 0
@@ -773,5 +773,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			mResolvingConnectionFailure = BaseGameUtils.resolveConnectionFailure(this, mGoogleApiClient,
 					connectionResult, RC_SIGN_IN, "Sign in error");
 		}
+	}
+
+	public int getRoomSize(){
+		return mParticipants.size();
 	}
 }
