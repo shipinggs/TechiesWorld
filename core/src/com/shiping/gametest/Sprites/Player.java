@@ -201,7 +201,8 @@ public class Player extends Sprite {
                 bdef.position.set(140 / TechiesWorld.PPM, 900 / TechiesWorld.PPM);
             } else if (TechiesWorld.playServices.getMyPosition() == 3) {
                 bdef.position.set(900 / TechiesWorld.PPM, 900 / TechiesWorld.PPM);
-            } else if (currentState == State.ALIVE) {
+            }
+        }else if (currentState == State.ALIVE) {
                 Vector2 currentPosition = b2body.getPosition();
                 world.destroyBody(b2body);
                 bdef.position.set(currentPosition);
@@ -225,7 +226,6 @@ public class Player extends Sprite {
             fdef.shape = shape;
             b2body.createFixture(fdef).setUserData(this); // fixture is within a body
         }
-    }
         public byte[] sendPositionBuffer () { //sending player position to other device
             byte[] position = new byte[6];
             position[0] = (byte) 'P';
