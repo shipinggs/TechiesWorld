@@ -615,7 +615,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		synchronized (playersMyIdHashcode) {
 			playersMyIdHashcode.add(mMyIdHashcode);
 			Collections.sort(playersMyIdHashcode); // Sort the arraylist, last element is the largest
-			for(int i=0; i<playersMyIdHashcode.size(); i++){
+			/*for(int i=0; i<playersMyIdHashcode.size(); i++){
 				//Toast.makeText(getApplicationContext(), "hashcode: "+playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
 				if(mMyIdHashcode==playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))){ //gets the last item in first iteration, largest for an ascending sort
 					playerId = i;
@@ -625,7 +625,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 				}
 
-			}
+			}*/
+			playerId = getMyID();
+			unspawnedIndex = unspawnedIndex + (playerId * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 
 		}
 	}
