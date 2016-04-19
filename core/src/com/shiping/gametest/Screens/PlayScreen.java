@@ -1,5 +1,6 @@
 package com.shiping.gametest.Screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
@@ -260,6 +261,7 @@ public class PlayScreen implements Screen {
 
         //handle any queued items to spawn
         handleSpawningItems();
+
 
         world.step(1 / 60f, 6, 2);
 

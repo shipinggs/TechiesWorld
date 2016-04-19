@@ -1,5 +1,6 @@
 package com.shiping.gametest.Screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -8,6 +9,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -27,6 +31,13 @@ public class EndScreen implements Screen {
 
     private Hud2 hud2;
 
+    private BitmapFont font;
+    private Texture calibriFontTexture;
+    private TextureAtlas endScreenAtlas; //holds background image
+    private TextButton endScreenBackground;
+    private Skin endScreenSkin;
+    private TextButton backToMenuBtn;
+
     public EndScreen(TechiesWorld game){
         this.game = game; // ** get Game parameter **//
         camera = new OrthographicCamera();
@@ -38,9 +49,51 @@ public class EndScreen implements Screen {
         Gdx.input.setInputProcessor(stage); //** stage is responsive **//
 
         hud2=new Hud2(game.batch);
+
+        //font
+        calibriFontTexture = new Texture(Gdx.files.internal("fonts/hudfont.png"));
+        font = new BitmapFont(Gdx.files.internal("fonts/hudfont.fnt"), new TextureRegion(calibriFontTexture), false);
+
+        //background
+        endScreenAtlas = new TextureAtlas("EndPage/endScreen.atlas");
+        endScreenSkin = new Skin();
+        endScreenSkin.addRegions(endScreenAtlas);
+        TextButton.TextButtonStyle styleEndScreen = new TextButton.TextButtonStyle();
+        styleEndScreen.up = endScreenSkin.getDrawable("endscreen");
+        styleEndScreen.down = endScreenSkin.getDrawable("endscreen");
+        styleEndScreen.font = font;
+        endScreenBackground = new TextButton("", styleEndScreen);
+        endScreenBackground.setPosition(0, 0);
+        endScreenBackground.setHeight(Gdx.graphics.getHeight());
+        endScreenBackground.setWidth(Gdx.graphics.getWidth());
+
+        //Back to menu button
+        TextButton.TextButtonStyle styleBackToMenu = new TextButton.TextButtonStyle();
+        styleBackToMenu.up = endScreenSkin.getDrawable("BackToMenu");
+        styleBackToMenu.down = endScreenSkin.getDrawable("BackToMenu");
+        styleBackToMenu.font = font;
+        backToMenuBtn = new TextButton("", styleBackToMenu);
+        backToMenuBtn.setHeight((int) (Gdx.graphics.getWidth()/2/2.6));
+        backToMenuBtn.setWidth(Gdx.graphics.getWidth() / 2);
+        backToMenuBtn.setPosition(Gdx.graphics.getWidth() - (int)(backToMenuBtn.getWidth()/1.5),(int)((0-backToMenuBtn.getHeight())/2.2));
+
     }
     @Override
     public void show() {
+        stage.addActor(endScreenBackground);
+
+        backToMenuBtn.addListener(new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+
+                Gdx.app.log("backToMenuBtn", "Pressed");
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuScreen(game));
+                return true;
+
+            }
+
+        });
+
+        //stage.addActor(backToMenuBtn);
 
     }
     public void update(float delta){
@@ -51,15 +104,16 @@ public class EndScreen implements Screen {
     @Override
     public void render(float delta) {
         update(delta);
-        Gdx.gl.glClearColor(0, 0, 99, 1); // rgba. clear screen with blue
+        Gdx.gl.glClearColor(0, 0, 0, 1); // rgba. clear screen with black
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 
         stage.act();
 
         batch.setProjectionMatrix(camera.combined);
+        stage.draw();
         hud2.stage.draw();
         batch.begin();
-        stage.draw();
+
         batch.end();
 
     }
@@ -86,6 +140,11 @@ public class EndScreen implements Screen {
 
     @Override
     public void dispose() {
+        font.dispose();
+        endScreenAtlas.dispose();
+        endScreenSkin.dispose();
+        calibriFontTexture.dispose();
+        stage.dispose();
 
     }
 }

@@ -22,12 +22,12 @@ public class Hud2 implements Disposable {
     private Viewport viewport;
     private OrthographicCamera hudcam;
 
-    Label player0;
+    Label player0; //texture
     Label player1;
     Label player2;
     Label player3;
 
-    Label player0Score;
+    Label player0Score; //number
     Label player1Score;
     Label player2Score;
     Label player3Score;
@@ -66,7 +66,8 @@ public class Hud2 implements Disposable {
         showPlayerId=new Label(String.format("You are player "+String.valueOf(TechiesWorld.playServices.getMyID()+1)), new Label.LabelStyle(
                 new BitmapFont(Gdx.files.internal("fonts/hudfont.fnt")), Color.WHITE));
 
-        table.add(showPlayerId).expandX();
+
+        table.add(showPlayerId).expandX().padTop(50);
         table.row();
         table.add(player0).expandX().padTop(10);
         table.add(player0Score).expandX().padTop(10);

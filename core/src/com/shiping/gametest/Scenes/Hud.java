@@ -78,11 +78,14 @@ public class Hud implements Disposable {
                 TechiesWorld.playServices.putPlayerScore(score);
                 TechiesWorld.playServices.broadcastReliableMsg(sendScoreBuffer());
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new EndScreen(game));
-
             }
             countDownLabel.setText(String.format("%03d", worldTimer));
             timeCount = 0;
         }
+    }
+
+    public int getWorldTimer() {
+        return worldTimer;
     }
 
     @Override

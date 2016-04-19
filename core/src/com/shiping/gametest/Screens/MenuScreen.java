@@ -219,7 +219,7 @@ public class MenuScreen implements Screen {
     }
 
     public void update(){
-        if (TechiesWorld.playServices.isSignedIn()){
+        if (TechiesWorld.playServices.isSignedIn()){ //use this block as signal for loading screen
             if (TechiesWorld.playServices.getAbleToStart()){
                 music.stop();
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayScreen(game));
