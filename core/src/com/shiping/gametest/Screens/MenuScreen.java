@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.shiping.gametest.TechiesWorld;
 import com.badlogic.gdx.Game;
 
@@ -30,6 +31,7 @@ public class MenuScreen implements Screen {
     private TextButton logoutBtn;
     private TextButton startGameBtn;
     private TextButton invitationBoxBtn;
+    private TextButton tutorialBtn;
     private Skin buttonSkin; //** images are used as skins of the button **//
     private BitmapFont font; //** same as that used in Tut 7 **//
     private Texture calibriFontTexture;
@@ -51,7 +53,7 @@ public class MenuScreen implements Screen {
         //font, reserved for future use
         calibriFontTexture = new Texture(Gdx.files.internal("fonts/hudfont.png"));
         font = new BitmapFont(Gdx.files.internal("fonts/hudfont.fnt"), new TextureRegion(calibriFontTexture), false);
-        font.setColor(0,0,1,1); //** Blue text **//
+        font.setColor(0, 0, 1, 1); //** Blue text **//
 
         //buttons
         buttonsAtlas = new TextureAtlas("menuScreen/buttons.pack");
@@ -85,6 +87,15 @@ public class MenuScreen implements Screen {
         invitationBoxBtn.setPosition(100,500);
         invitationBoxBtn.setHeight(200);
         invitationBoxBtn.setWidth(400);
+
+        TextButton.TextButtonStyle styleTutorial=new TextButton.TextButtonStyle();
+        styleTutorial.up=buttonSkin.getDrawable("button_logout");
+        styleTutorial.down=buttonSkin.getDrawable("button_logout");
+        styleTutorial.font=font;
+        tutorialBtn=new TextButton("",styleTutorial);
+        tutorialBtn.setPosition(600,20);
+        tutorialBtn.setHeight(200);
+        tutorialBtn.setWidth(400);
 
         music = game.getManager().get("audio/music/bgm1.ogg", Music.class);
         music.setLooping(true);
@@ -152,6 +163,21 @@ public class MenuScreen implements Screen {
         });
 
         stage.addActor(invitationBoxBtn);
+
+        tutorialBtn.addListener(new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Tutorial", "Pressed");
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new TutorialScreen(game));
+                return true;
+            }
+
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Tutorial", "Released");
+            }
+        });
+
+        stage.addActor(tutorialBtn);
+
     }
 
     public void update(){

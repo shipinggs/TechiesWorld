@@ -9,6 +9,8 @@ import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.Mine;
 import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.Sprites.TileObjects.InteractiveTileObject;
+import com.shiping.gametest.Sprites.Tutorial.TutorialCoin;
+import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
 /**
@@ -37,6 +39,14 @@ public class WorldContactListener implements ContactListener {
                     ((Coin) fixA.getUserData()).contact((Player) fixB.getUserData());
                 } else {
                     ((Coin) fixB.getUserData()).contact((Player) fixA.getUserData());
+                }
+                break;
+
+            case TechiesWorld.PLAYER_BIT | TechiesWorld.TUTCOIN_BIT:
+                if (fixA.getFilterData().categoryBits == TechiesWorld.TUTCOIN_BIT) {
+                    ((TutorialCoin) fixA.getUserData()).contact((TutorialPlayer) fixB.getUserData());
+                } else {
+                    ((TutorialCoin) fixB.getUserData()).contact((TutorialPlayer) fixA.getUserData());
                 }
                 break;
         }

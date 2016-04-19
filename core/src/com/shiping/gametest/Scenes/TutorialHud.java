@@ -11,13 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.shiping.gametest.Sprites.Player;
+import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 1/3/16.
+ * Created by shiping on 19/4/16.
  */
-public class Hud implements Disposable {
+public class TutorialHud implements Disposable {
     public Stage stage;
     // We want a separate viewport for our hud as it should stay locked on screen
     private Viewport viewport;
@@ -25,18 +25,20 @@ public class Hud implements Disposable {
 
     private int worldTimer;
     private float timeCount;
-    private static Integer score;
+    private static int score;
 
-    private Player player;
+    private TutorialPlayer player;
 
-    Label countDownLabel;
-    Label scoreLabel;
-    Label timeLabel;
-    Label goldLabel;
+    private Label countDownLabel;
+    private Label scoreLabel;
+    private Label timeLabel;
+    private Label goldLabel;
 
-    public Hud (SpriteBatch sb, Player player) {
+
+
+    public TutorialHud (SpriteBatch sb, TutorialPlayer player) {
         this.player = player;
-        worldTimer = 180;
+        worldTimer = 100;
         timeCount = 0;
         score = player.getGoldAmount();
 
@@ -68,11 +70,15 @@ public class Hud implements Disposable {
         timeCount += dt;
         score = player.getGoldAmount();  // update score from player
         scoreLabel.setText((String.format("%06d", score)));
-        if (timeCount >= 1) {   // one second
+        if (timeCount >= 1 && worldTimer > 0) {   // one second
             worldTimer--;
             countDownLabel.setText(String.format("%03d", worldTimer));
             timeCount = 0;
         }
+    }
+
+    public int getWorldTimer() {
+        return worldTimer;
     }
 
     @Override

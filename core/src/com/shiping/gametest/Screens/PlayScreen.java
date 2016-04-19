@@ -113,7 +113,7 @@ public class PlayScreen implements Screen {
         gamePort = new FitViewport(TechiesWorld.V_WIDTH / TechiesWorld.PPM, TechiesWorld.V_HEIGHT / TechiesWorld.PPM, gamecam);
 
         mapLoader = new TmxMapLoader();
-        map = mapLoader.load("mapSample.tmx");
+        map = mapLoader.load("map.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, 1 / TechiesWorld.PPM);
 
         //Set initial gamecam position to be centered correctly
