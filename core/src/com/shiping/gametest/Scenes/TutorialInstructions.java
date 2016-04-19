@@ -31,7 +31,8 @@ public class TutorialInstructions implements Disposable {
 
     private final String joystickInstruction = "Toggle 'joystick'\n here to move";
     private final String layMineInstruction = "Press button here\n to lay a mine";
-    private final String pickCoinInstruction = "Move towards coin\n to gain gold";
+    private final String pickCoinInstruction = "Go pick the coin to gain gold";
+    private final String surpriseInstruction = "Be wary of mines! You lose gold when you die.\nIt's now safe to pick the coins.";
     private final String pickCoinInstruction2 = "Player with most gold wins the game.\nYou're now ready to go!";
 
     private float timer;
@@ -59,7 +60,7 @@ public class TutorialInstructions implements Disposable {
         Table table2 = new Table();
         table2.center().right();
         table2.setFillParent(true);
-        table2.add(rightLabel).width(300).padRight(20);
+        table2.add(rightLabel).width(300).padRight(50);
 
         stage.addActor(table);
         stage.addActor(table2);
@@ -68,12 +69,16 @@ public class TutorialInstructions implements Disposable {
 
     public void update(float dt) {
         timer += dt;
-        if (screen.hasMoved() && !screen.hasPlantedMine() && !screen.hasPickedCoin() && timer >= 3) {
+        if (screen.hasMoved() && !screen.hasPlantedMine()
+                && !screen.hasPickedCoin() &&!screen.hasDied() && timer >= 3) {
             rightLabel.setText(layMineInstruction);
             leftLabel.setText("");
-        } else if (screen.hasPlantedMine() && !screen.hasPickedCoin() && timer >= 6) {
+        } else if (screen.hasPlantedMine() && !screen.hasPickedCoin()
+                && !screen.hasDied() && timer >= 6) {
             rightLabel.setText("");
             leftLabel.setText(pickCoinInstruction);
+        } else if (screen.hasDied() && !screen.hasPickedCoin()) {
+            leftLabel.setText(surpriseInstruction);
         } else if (screen.hasPickedCoin()) {
             leftLabel.setText(pickCoinInstruction2);
         }

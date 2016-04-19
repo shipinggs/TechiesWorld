@@ -19,7 +19,7 @@ import com.shiping.gametest.TechiesWorld;
 public class TutorialMine extends TutorialItem {
     private int playerID; // put by which player
 
-    public enum State { PLACED, TRANSITION, ARMED }
+    public enum State { PLACED, TRANSITION, ARMED, HIDDEN, EXPLODING }
     private State currentState;
     private State previousState;
     private float stateTime;
@@ -27,6 +27,8 @@ public class TutorialMine extends TutorialItem {
     private TextureRegion placedTexture;
     private TextureRegion transitionTexture;
     private TextureRegion armedTexture;
+    private TextureRegion nullTexture;
+    private Animation explosion;
 
     public TutorialMine(TutorialScreen screen, float x, float y, int playerID) {
         super(screen, x, y);
@@ -37,12 +39,28 @@ public class TutorialMine extends TutorialItem {
         placedTexture = new TextureRegion((texture), 0, 0, 70, 70);
         transitionTexture = new TextureRegion((texture), 70, 0, 70, 70);
         armedTexture = new TextureRegion((texture), 140, 0, 70, 70);
+        nullTexture = new TextureRegion((texture), 210, 0, 70, 70);
+
+        Array<TextureRegion> frames = new Array<TextureRegion>();
+
+        // get explosion animation frames and add to explosion Animation
+        for (int i = 0; i < 5; i++) {
+            frames.add(new TextureRegion(new Texture("explode(64x64).png"), i*64, 0, 64, 64));
+        }
+        explosion = new Animation(0.1f, frames);
+
+        // clear frames
+        frames.clear();
 
         currentState = previousState = State.PLACED;
         setRegion(placedTexture);
 
         defineItem();
 
+    }
+
+    public void setCurrentState(State currentState) {
+        this.currentState = currentState;
     }
 
     public TextureRegion getFrame(float dt) {
@@ -57,6 +75,12 @@ public class TutorialMine extends TutorialItem {
                 break;
             case ARMED:
                 region = armedTexture;
+                break;
+            case HIDDEN:
+                region = nullTexture;
+                break;
+            case EXPLODING:
+                region = explosion.getKeyFrame(stateTime, true);
                 break;
             default:
                 region = armedTexture;
@@ -76,6 +100,11 @@ public class TutorialMine extends TutorialItem {
             currentState = State.TRANSITION;
         } else if (currentState == State.TRANSITION && stateTime > 1) {
             currentState = State.ARMED;
+            defineItem();
+        } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != screen.getPlayer().getPlayerID()) {
+            currentState = State.HIDDEN;
+        } else if (currentState == State.EXPLODING & stateTime > 0.5) {
+            destroy();
         }
         // update sprite to correspond with position of b2body
         setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2);
@@ -90,16 +119,27 @@ public class TutorialMine extends TutorialItem {
 
     @Override
     public void defineItem() {
+        Vector2 position;
+        if (currentState == State.ARMED || currentState == State.HIDDEN) {
+            position = body.getPosition();
+            world.destroyBody(body);
+        } else {
+            position = new Vector2(getX(),getY());
+        }
         BodyDef bdef = new BodyDef();
-        bdef.position.set(getX(), getY());
+        bdef.position.set(position);
         bdef.type = BodyDef.BodyType.StaticBody;
         body = world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(24 / TechiesWorld.PPM, 24/ TechiesWorld.PPM);
-        fdef.filter.categoryBits = TechiesWorld.NOTHING_BIT;
-        fdef.filter.maskBits = TechiesWorld.MINE_BIT |
+        if ((currentState == State.ARMED || currentState == State.HIDDEN) && playerID != screen.getPlayer().getPlayerID()) {
+            fdef.filter.categoryBits = TechiesWorld.TUTMINE_BIT;
+        } else {
+            fdef.filter.categoryBits = TechiesWorld.NOTHING_BIT;
+        }
+        fdef.filter.maskBits = TechiesWorld.TUTMINE_BIT |
                 TechiesWorld.WALL_BIT |
                 TechiesWorld.PLAYER_BIT ;
 
@@ -109,7 +149,14 @@ public class TutorialMine extends TutorialItem {
 
     @Override
     public void contact(TutorialPlayer player) {
-        //do nothing
+        if (currentState == State.ARMED || currentState == State.HIDDEN) {
+            currentState = State.EXPLODING;
+            screen.getAudioManager().get("audio/sounds/explosion2.wav", Sound.class).play();
+            screen.getAudioManager().get("audio/sounds/die2.wav", Sound.class).play();
+            screen.getAudioManager().get("audio/sounds/slime2.wav", Sound.class).play();
+            player.setPlayerDead();
+            player.b2body.setLinearVelocity(0, 0);
+        }
     }
 
 }

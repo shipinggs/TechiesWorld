@@ -162,8 +162,11 @@ public class Player extends Sprite {
     }
 
     public int getAmountDropped() {
-        int amount = gold / 3 < 200 ? 200 : gold / 3;
+        int amount = gold / 4 < 150 ? 150 : gold / 4;
         gold -= amount;
+        if (gold<=0) {
+            gold = 0;
+        }
         return amount;
     }
 
@@ -225,6 +228,8 @@ public class Player extends Sprite {
             fdef.shape = shape;
             b2body.createFixture(fdef).setUserData(this); // fixture is within a body
         }
+
+
         public byte[] sendPositionBuffer () { //sending player position to other device
             byte[] position = new byte[6];
             position[0] = (byte) 'P';

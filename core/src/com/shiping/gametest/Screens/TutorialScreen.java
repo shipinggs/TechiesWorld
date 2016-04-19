@@ -65,12 +65,12 @@ public class TutorialScreen implements Screen {
 
     // Music
     private AssetManager audioManager;
-    private Music music;
 
     // Instruction steps
     private boolean hasMoved;
     private boolean hasPlantedMine;
     private boolean hasPickedCoin;
+    private boolean hasDied;
 
 
     public TutorialScreen(TechiesWorld game) {
@@ -125,7 +125,7 @@ public class TutorialScreen implements Screen {
         if (!itemsToSpawn.isEmpty()) {
             TutorialItemDef idef = itemsToSpawn.poll(); // like a pop for a queue
             if (idef.type == TutorialMine.class) {
-                items.add(new TutorialMine(this, idef.position.x, idef.position.y,0));
+                items.add(new TutorialMine(this, idef.position.x, idef.position.y,1));
             } else if (idef.type == TutorialCoin.class) {
                 items.add(new TutorialCoin(this, idef.position.x, idef.position.y, 100));
             }
@@ -137,9 +137,12 @@ public class TutorialScreen implements Screen {
             if (touchPadControl.isMinePressed()) {
                 if (!hasPlantedMine())  {
                     hasPlantedMine = true;
-                    spawnItem(new TutorialItemDef(new Vector2(1.05f,0.7f), TutorialCoin.class));
+                    spawnItem(new TutorialItemDef(new Vector2(1.05f, 0.7f), TutorialCoin.class));
+                    TutorialMine tm = new TutorialMine(this, 1.05f, 0.6f, 0);
+                    tm.setCurrentState(TutorialMine.State.HIDDEN);
+                    tm.defineItem();
+                    items.add(tm);
                     audioManager.get("audio/sounds/pickup2.wav", Sound.class).play();
-
                 }
                 spawnItem(new TutorialItemDef(new Vector2(player.b2body.getPosition().x, player.b2body.getPosition().y), TutorialMine.class)); //999 is a placeholder for index input which is only required for coins
                 audioManager.get("audio/sounds/mine.wav", Sound.class).play();
@@ -206,6 +209,10 @@ public class TutorialScreen implements Screen {
         return audioManager;
     }
 
+    public TutorialPlayer getPlayer() {
+        return player;
+    }
+
     public boolean hasMoved() {
         return hasMoved;
     }
@@ -216,6 +223,14 @@ public class TutorialScreen implements Screen {
 
     public boolean hasPickedCoin() {
         return hasPickedCoin;
+    }
+
+    public boolean hasDied() {
+        return hasDied;
+    }
+
+    public void setHasDied(boolean bool) {
+        hasDied = bool;
     }
 
     @Override

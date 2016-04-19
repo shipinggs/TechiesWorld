@@ -2,6 +2,7 @@ package com.shiping.gametest.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -38,6 +39,8 @@ public class EndScreen implements Screen {
         Gdx.input.setInputProcessor(stage); //** stage is responsive **//
 
         hud2=new Hud2(game.batch);
+
+        game.getManager().get("audio/sounds/win.wav", Sound.class).play();
     }
     @Override
     public void show() {

@@ -99,7 +99,7 @@ public class Mine extends Item {
         } else if (currentState == State.TRANSITION && stateTime > 1) {
             currentState = State.ARMED;
             defineItem();
-        } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != TechiesWorld.playServices.getMyID()) {
+        } else if (currentState == State.ARMED && sta   teTime > 0.5 && playerID != TechiesWorld.playServices.getMyID()) {
             currentState = State.HIDDEN;
         } else if (currentState == State.EXPLODING & stateTime > 0.5) {
             destroy();
