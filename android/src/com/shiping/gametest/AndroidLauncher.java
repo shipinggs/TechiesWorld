@@ -2,12 +2,10 @@ package com.shiping.gametest;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.google.android.gms.common.ConnectionResult;
@@ -26,13 +24,11 @@ import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.example.games.basegameutils.BaseGameUtils;
-import com.google.example.games.basegameutils.GameHelper;
-
-
 
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -77,11 +73,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	String mMyId = null;
 	int mMyIdHashcode = 0;
 	ArrayList<Integer> playersMyIdHashcode = new ArrayList<>(); //stores hashcode of all player's mMyID
-	int playerId = -1; //will be assigned a value of 0-3 later
 
 	Participant me = null;
 
-	int myPosition = -1;
+	int myId = -1;
 
 	Map<Integer, int[]> playerPositions = new HashMap<>();
 
@@ -98,7 +93,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	Map<Integer, int[]> unspawnedCoinPositions = new HashMap<>();
 	int unspawnedIndex = -128; //lowest value of a byte
 	int numOfCoinsToSpawn = 0;
-	int[] unspawnedGetIndexArray = {-128, -64, -1, 63}; //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
+	int[] unspawnedGetIndexArray = {-128, -64, 0, 64}; //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 	Object numOfCoinsToSpawnLock = new Object();
 
 
@@ -198,7 +193,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		if (requestCode == RC_WAITING_ROOM) {
 			if (mWaitingRoomFinishedFromCode){
 				if (mParticipants != null) {
-					myPosition = mParticipants.indexOf(me);
+					myId = mParticipants.indexOf(me);
 					ableToStart = true;
 				}
 				return;
@@ -208,7 +203,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 				bytes[0]=(byte) 'A';
 				broadcastReliableMsg(bytes);
 				if (mParticipants != null) {
-					myPosition = mParticipants.indexOf(me);
+					myId = mParticipants.indexOf(me);
 					ableToStart = true;
 				}
 			} else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
@@ -381,7 +376,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 		} else if (buf[0] == 'C') { //coin spawned by other player
 			receiveCoinSpawnMsg(buf);
-			Log.d(TAG, "received coin spawn msg");
+			Log.wtf(TAG, "recv coin spawn msg from player: "+buf[1]+" n: "+buf[2]);
 
 		} else if (buf[0] == 'M') {
 			int[] mineValue = new int[7];
@@ -395,15 +390,15 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}else if (buf[0]=='t'){ //test
 			int val = buf[1];
 			Toast.makeText(getApplicationContext(), "" + val, Toast.LENGTH_SHORT).show();
-		}else if (buf[0]=='o'){ //determining order of playerID
-			synchronized (playersMyIdHashcode){
-				byte[] hashCodeArray = {buf[1],buf[2],buf[3],buf[4]}; //last 4 bytes store hashcode
-				playersMyIdHashcode.add(ByteBuffer.wrap(hashCodeArray).getInt()); //get int hashcode from other players
-			}
-			//at this point we haven't added the mMyIDhashcode of this device to playersMyIdHashcode yet hence the +1
-			if (playersMyIdHashcode.size() + 1 == mParticipants.size()) { //add a barrier so that mParticipants has been initialised else it is null
-				setPlayerId();
-			}
+//		}else if (buf[0]=='o'){ //determining order of playerID
+//			synchronized (playersMyIdHashcode){
+//				byte[] hashCodeArray = {buf[1],buf[2],buf[3],buf[4]}; //last 4 bytes store hashcode
+//				playersMyIdHashcode.add(ByteBuffer.wrap(hashCodeArray).getInt()); //get int hashcode from other players
+//			}
+//			//at this point we haven't added the mMyIDhashcode of this device to playersMyIdHashcode yet hence the +1
+//			if (playersMyIdHashcode.size() + 1 == mParticipants.size()) { //add a barrier so that mParticipants has been initialised else it is null
+//				setPlayerCoinUnspawnedIndex();
+//			}
 		}else if(buf[0]=='M'){
 			int[] mineValue=new int[7];
 			for (int i=1;i<=7;i++){
@@ -465,8 +460,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			me = room.getParticipant(mMyId);
 			calcMyIdHashCode();
 
-			byte[] initOrderMsg = toBytesInitMsg(mMyIdHashcode);
-			broadcastMsg(initOrderMsg);
+//			byte[] initOrderMsg = toBytesInitMsg(mMyIdHashcode);
+//			broadcastMsg(initOrderMsg);
 		}
 	}
 
@@ -550,6 +545,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			Games.RealTimeMultiplayer.leave(mGoogleApiClient, this, mRoomId);
 			mRoomId = null;
 			ableToStart = false;
+
 		}
 	}
 
@@ -591,7 +587,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	}
 
 	public int getMyID() {
-		return myPosition;
+		return myId;
 	}
 
 	public int[] getPlayerPosition(int id) {
@@ -603,47 +599,42 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	}
 
 
-//	@Override
-//	public int getPlayerId() { //synced so that playscreen must wait and cannot be instantiated until playerid is ready
-//		synchronized (playersMyIdHashcode) {
-//			return playerId;
-//		}
-//	}
-
-	public void setPlayerId() { //obtain a playerID (0-3) for this device's player
+	public void setPlayerCoinUnspawnedIndex() { //obtain a playerID (0-3) for this device's player
 		//largest hashcode ranked at rank0, playerID = 0
-		synchronized (playersMyIdHashcode) {
-			playersMyIdHashcode.add(mMyIdHashcode);
-			Collections.sort(playersMyIdHashcode); // Sort the arraylist, last element is the largest
-			/*for(int i=0; i<playersMyIdHashcode.size(); i++){
-				//Toast.makeText(getApplicationContext(), "hashcode: "+playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
-				if(mMyIdHashcode==playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))){ //gets the last item in first iteration, largest for an ascending sort
-					playerId = i;
-					//Toast.makeText(getApplicationContext(), "playerId assigned: "+playerId, Toast.LENGTH_LONG).show();
-					//Toast.makeText(getApplicationContext(), "playersMy size: "+playersMyIdHashcode.size(), Toast.LENGTH_SHORT).show();
-					unspawnedIndex = unspawnedIndex + (i * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
-
-				}
-
-			}*/
-			playerId = getMyID();
-			unspawnedIndex = unspawnedIndex + (playerId * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
-
-		}
+//		synchronized (playersMyIdHashcode) {
+//			playersMyIdHashcode.add(mMyIdHashcode);
+//			Collections.sort(playersMyIdHashcode); // Sort the arraylist, last element is the largest
+//			for(int i=0; i<playersMyIdHashcode.size(); i++){
+//				//Toast.makeText(getApplicationContext(), "hashcode: "+playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
+//				if(mMyIdHashcode==playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))){ //gets the last item in first iteration, largest for an ascending sort
+//					playerId = i;
+//					//Toast.makeText(getApplicationContext(), "playerId assigned: "+playerId, Toast.LENGTH_LONG).show();
+//					//Toast.makeText(getApplicationContext(), "playersMy size: "+playersMyIdHashcode.size(), Toast.LENGTH_SHORT).show();
+//					unspawnedIndex = unspawnedIndex + (i * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
+//
+//				}
+//
+//			}
+//
+//		}
+		unspawnedIndex = unspawnedIndex + (getMyID() * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 	}
 
 	@Override
 	public int[] getSpawnedCoinPosition() {
 		synchronized (unspawnedCoinPositions){
 			for(int i = 0; i < 4; i++){
-				if(unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[i]) && playerId!=i) { //need to extract coin index from hashmap
+				if(unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[i]) && myId!=i) { //need to extract coin index from hashmap
 					int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[i]); //retVal = {playerID, n, amount, index}
 					unspawnedGetIndexArray[i]++;
 					synchronized (numOfCoinsToSpawnLock) {
 						numOfCoinsToSpawn--;
 					}
+
+					Log.wtf("TAG", "Show content of retval: " + Arrays.toString(retVal));
 					return retVal;
 				}
+
 			}
 
 			return null;

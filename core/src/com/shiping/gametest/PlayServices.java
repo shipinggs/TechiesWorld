@@ -52,4 +52,6 @@ public interface PlayServices {
 
     public int getRoomSize();
 
+    public void setPlayerCoinUnspawnedIndex();
+
 }

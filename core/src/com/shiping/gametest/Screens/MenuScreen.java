@@ -83,7 +83,7 @@ public class MenuScreen implements Screen {
         styleInvitationBox.down=buttonSkin.getDrawable("button_logout");
         styleInvitationBox.font=font;
         invitationBoxBtn=new TextButton("",styleInvitationBox);
-        invitationBoxBtn.setPosition(100, 500);
+        invitationBoxBtn.setPosition(100, 450);
         invitationBoxBtn.setHeight(200);
         invitationBoxBtn.setWidth(400);
 
@@ -181,7 +181,7 @@ public class MenuScreen implements Screen {
     @Override
     public void render(float delta) {
         update();
-        //Gdx.gl.glClearColor(0, 99, 0, 1); // rgba. clear screen with green
+        Gdx.gl.glClearColor(0, 99, 0, 1); // rgba. clear screen with green
         //Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
         //Gdx.gl.glClearColor(1, 0, 0, 0); // rgba. clear screen with black
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
@@ -191,7 +191,7 @@ public class MenuScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(menuScreenBackground, 0, 0);
-        //stage.draw();
+        stage.draw();
         batch.end();
 
 
