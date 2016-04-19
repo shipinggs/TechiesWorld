@@ -17,6 +17,7 @@ public interface PlayServices {
     public void showInvitationBox();
     public boolean getAbleToStart();
     public void broadcastMsg(byte[] mMsgBuf);
+    public void broadcastReliableMsg(byte[] mMsgBuf);
     public void destroy();
     public int getMyID();
     public int[] getPlayerPosition(int id);
@@ -53,5 +54,8 @@ public interface PlayServices {
     public int getRoomSize();
 
     public void setPlayerCoinUnspawnedIndex();
+
+    public int getPlayerScore(int id);
+    public void putPlayerScore(int score);
 
 }

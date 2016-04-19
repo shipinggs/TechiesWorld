@@ -69,6 +69,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	//ArrayList<Participant> mParticipants = null;
 	ArrayList<Participant> mParticipants = new ArrayList<>();
 
+	Map<Integer, Integer> playerScore=new HashMap<>();
+
 	//variables used to assign playerID (0-3)
 	String mMyId = null;
 	int mMyIdHashcode = 0;
@@ -390,15 +392,6 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}else if (buf[0]=='t'){ //test
 			int val = buf[1];
 			Toast.makeText(getApplicationContext(), "" + val, Toast.LENGTH_SHORT).show();
-//		}else if (buf[0]=='o'){ //determining order of playerID
-//			synchronized (playersMyIdHashcode){
-//				byte[] hashCodeArray = {buf[1],buf[2],buf[3],buf[4]}; //last 4 bytes store hashcode
-//				playersMyIdHashcode.add(ByteBuffer.wrap(hashCodeArray).getInt()); //get int hashcode from other players
-//			}
-//			//at this point we haven't added the mMyIDhashcode of this device to playersMyIdHashcode yet hence the +1
-//			if (playersMyIdHashcode.size() + 1 == mParticipants.size()) { //add a barrier so that mParticipants has been initialised else it is null
-//				setPlayerCoinUnspawnedIndex();
-//			}
 		}else if(buf[0]=='M'){
 			int[] mineValue=new int[7];
 			for (int i=1;i<=7;i++){
@@ -407,6 +400,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			synchronized (minePosition){
 				minePosition.add(mineValue);
 			}
+		}else if (buf[0]=='L'){
+			int score=(int)(buf[2])*100+(int)(buf[3]);
+			playerScore.put((int)buf[1],score);
 		}
 	}
 
@@ -771,4 +767,21 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	public int getRoomSize(){
 		return mParticipants.size();
 	}
+
+	public int getPlayerScore(int id){
+		synchronized (playerScore){
+			if (playerScore.containsKey(id)){
+				return playerScore.get(id);
+			}
+		}
+		return 0;
+	}
+
+	public void putPlayerScore(int score){
+		synchronized (playerScore){
+			playerScore.put(getMyID(),score);
+			System.out.println("adding id: "+getMyID()+" score: "+score);
+		}
+	}
+
 }

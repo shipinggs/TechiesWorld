@@ -134,7 +134,7 @@ public class PlayScreen implements Screen {
         }
 
         //Heads-Up Display
-        hud = new Hud(game.batch, player);
+        hud = new Hud(game.batch, player, game);
 
         //TouchPad Controller
         touchPadControl = new TouchPadControl(game.batch);

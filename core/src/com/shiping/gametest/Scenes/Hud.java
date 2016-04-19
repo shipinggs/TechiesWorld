@@ -1,5 +1,6 @@
 package com.shiping.gametest.Scenes;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.shiping.gametest.Screens.EndScreen;
 import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.TechiesWorld;
 
@@ -28,15 +30,17 @@ public class Hud implements Disposable {
     private static Integer score;
 
     private Player player;
+    private TechiesWorld game;
 
     Label countDownLabel;
     Label scoreLabel;
     Label timeLabel;
     Label goldLabel;
 
-    public Hud (SpriteBatch sb, Player player) {
+    public Hud (SpriteBatch sb, Player player, TechiesWorld game) {
         this.player = player;
-        worldTimer = 180;
+        this.game=game;
+        worldTimer = 140;
         timeCount = 0;
         score = player.getGoldAmount();
 
@@ -70,6 +74,12 @@ public class Hud implements Disposable {
         scoreLabel.setText((String.format("%06d", score)));
         if (timeCount >= 1) {   // one second
             worldTimer--;
+            if (worldTimer==0){
+                TechiesWorld.playServices.putPlayerScore(score);
+                TechiesWorld.playServices.broadcastReliableMsg(sendScoreBuffer());
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new EndScreen(game));
+
+            }
             countDownLabel.setText(String.format("%03d", worldTimer));
             timeCount = 0;
         }
@@ -78,5 +88,14 @@ public class Hud implements Disposable {
     @Override
     public void dispose() {
         stage.dispose();
+    }
+
+    public byte[] sendScoreBuffer(){
+        byte[] myScore=new byte[4];
+        myScore[0]=(byte) 'L';
+        myScore[1]=(byte) TechiesWorld.playServices.getMyID();
+        myScore[2]=(byte) (score/100);
+        myScore[3]=(byte) (score%100);
+        return myScore;
     }
 }

@@ -149,7 +149,6 @@ public class Player extends Sprite {
                 region = playerAlive.getKeyFrame(stateTimer, true);
                 break;
         }
-        System.out.println(currentState);
         stateTimer = currentState == previousState ? stateTimer + dt : 0;
         previousState = currentState;
         return region;
