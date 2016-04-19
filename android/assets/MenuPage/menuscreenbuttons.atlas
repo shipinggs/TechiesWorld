@@ -1,0 +1,40 @@
+
+menuscreenbuttons.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+InvitePlayers
+  rotate: false
+  xy: 1, 521
+  size: 1000, 128
+  orig: 1000, 128
+  offset: 0, 0
+  index: -1
+JoinGame
+  rotate: false
+  xy: 1, 391
+  size: 1000, 128
+  orig: 1000, 128
+  offset: 0, 0
+  index: -1
+Logout
+  rotate: false
+  xy: 1, 261
+  size: 1000, 128
+  orig: 1000, 128
+  offset: 0, 0
+  index: -1
+Quickgame
+  rotate: false
+  xy: 1, 131
+  size: 1000, 128
+  orig: 1000, 128
+  offset: 0, 0
+  index: -1
+Tutorial
+  rotate: false
+  xy: 1, 1
+  size: 1000, 128
+  orig: 1000, 128
+  offset: 0, 0
+  index: -1

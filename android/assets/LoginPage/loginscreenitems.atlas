@@ -1,0 +1,19 @@
+
+loginscreenitems.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+Login
+  rotate: false
+  xy: 1, 259
+  size: 1000, 128
+  orig: 1000, 128
+  offset: 0, 0
+  index: -1
+Titlesmall
+  rotate: false
+  xy: 1, 1
+  size: 512, 256
+  orig: 512, 256
+  offset: 0, 0
+  index: -1

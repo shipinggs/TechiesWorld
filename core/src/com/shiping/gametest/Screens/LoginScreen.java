@@ -27,10 +27,14 @@ public class LoginScreen implements Screen {
 
     private Stage stage; //** stage holds the Button **//
     private TextButton loginBtn;
-    private Skin buttonSkin; //** images are used as skins of the button **//
+    private Skin loginScreenSkin; //** images are used as skins of the button **//
+    private TextButton gameTitle;
     private BitmapFont font;
     private Texture calibriFontTexture;
-    private TextureAtlas buttonsAtlas; //** Holds the entire image for all buttons **//
+    private TextureAtlas loginScreenAtlas; //** Holds the entire image for login button and game title**//
+    private TextureAtlas menuLoginBackgroundAtlas; //holds background image
+    private TextButton menuLoginBackground;
+    private Skin menuLoginBackgroundSkin;
 
 
 
@@ -50,18 +54,45 @@ public class LoginScreen implements Screen {
         font = new BitmapFont(Gdx.files.internal("fonts/hudfont.fnt"), new TextureRegion(calibriFontTexture), false);
         font.setColor(0,0,1,1); //** Blue text **//
 
+        //background
+        menuLoginBackgroundAtlas = new TextureAtlas("Background/background.atlas");
+        menuLoginBackgroundSkin = new Skin();
+        menuLoginBackgroundSkin.addRegions(menuLoginBackgroundAtlas);
+        TextButton.TextButtonStyle styleBackground = new TextButton.TextButtonStyle();
+        styleBackground.up = menuLoginBackgroundSkin.getDrawable("Background");
+        styleBackground.down = menuLoginBackgroundSkin.getDrawable("Background");
+        styleBackground.font = font;
+        menuLoginBackground = new TextButton("", styleBackground);
+        menuLoginBackground.setPosition(0, 0);
+        menuLoginBackground.setHeight(Gdx.graphics.getHeight());
+        menuLoginBackground.setWidth(Gdx.graphics.getWidth());
+
         //button
-        buttonsAtlas = new TextureAtlas("menuScreen/buttons.pack");
-        buttonSkin = new Skin();
-        buttonSkin.addRegions(buttonsAtlas);
+        loginScreenAtlas = new TextureAtlas("LoginPage/loginscreenitems.atlas");
+        loginScreenSkin = new Skin();
+        loginScreenSkin.addRegions(loginScreenAtlas);
+
         TextButton.TextButtonStyle styleLogin = new TextButton.TextButtonStyle(); //** Button properties **//
-        styleLogin.up = buttonSkin.getDrawable("button_login");
-        styleLogin.down = buttonSkin.getDrawable("button_login");
+        styleLogin.up = loginScreenSkin.getDrawable("Login");
+        styleLogin.down = loginScreenSkin.getDrawable("Login");
         styleLogin.font = font;
         loginBtn = new TextButton("",styleLogin); //empty string since text is already on button
-        loginBtn.setPosition(100, 20); //** Button location **//
-        loginBtn.setHeight(200); //** Button Height **//
-        loginBtn.setWidth(400); //** Button Width **//
+        int buttonX = (int)(Gdx.graphics.getWidth()/1.75) - (int)loginBtn.getWidth()/2;
+        int buttonY = Gdx.graphics.getHeight()/8;
+        loginBtn.setPosition(buttonX, 2*buttonY); //** Button location **//
+        //loginBtn.setHeight(200); //** Button Height **//
+        //loginBtn.setWidth(400); //** Button Width **//
+
+        //Game title
+        TextButton.TextButtonStyle styleTitle = new TextButton.TextButtonStyle(); //** Button properties **//
+        styleTitle.up = loginScreenSkin.getDrawable("Titlesmall");
+        styleTitle.down = loginScreenSkin.getDrawable("Titlesmall");
+        styleTitle.font = font;
+        gameTitle = new TextButton("",styleTitle); //empty string since text is already on button
+        gameTitle.setHeight(Gdx.graphics.getHeight() * 3 / 8);
+        gameTitle.setWidth(Gdx.graphics.getHeight() * 3 / 4);
+        int titleX = Gdx.graphics.getWidth()/2 - (int) gameTitle.getWidth()/2;
+        gameTitle.setPosition(titleX, 5 * buttonY); //** Button location **//
     }
 
     public void login(){
@@ -75,6 +106,9 @@ public class LoginScreen implements Screen {
      */
     @Override
     public void show() {
+        stage.addActor(menuLoginBackground);
+        stage.addActor(gameTitle);
+
         loginBtn.addListener(new InputListener() {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 /*
@@ -170,8 +204,10 @@ public class LoginScreen implements Screen {
         stage.dispose();
         calibriFontTexture.dispose();
         font.dispose();
-        buttonsAtlas.dispose();
-        buttonSkin.dispose();
+        loginScreenAtlas.dispose();
+        loginScreenSkin.dispose();
+        menuLoginBackgroundAtlas.dispose();
+        menuLoginBackgroundSkin.dispose();
 
     }
 }

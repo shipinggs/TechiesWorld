@@ -92,7 +92,7 @@ public class PlayScreen implements Screen {
     int numOfCoinSpawnPositionsPerPlayer = 10;
     long timeCounter = 0;
 
-    private int spawnTime = 450; //increase value to reduce frequency of coin spawn, 
+    private int spawnTime = 1000; //increase value to reduce frequency of coin spawn,
 
     private int mineId;
     private Map<Integer,Mine> mineMap;
@@ -306,7 +306,7 @@ public class PlayScreen implements Screen {
         // randomly spawn coins every set time interval
         if(timeCounter%spawnTime==0){ //change % value to adjust spawn frequency
             if(spawnTime > 100){
-                spawnTime -= 20; //to maintain consistent coin spawn rate throughout the game
+                spawnTime -= 40; //to maintain consistent coin spawn rate throughout the game
             }
             Random rand = new Random();
             int  n = rand.nextInt(numOfCoinSpawnPositionsPerPlayer); //randomly generate a number from 0 to 2 to select coin spawn position
