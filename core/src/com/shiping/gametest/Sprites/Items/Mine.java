@@ -6,16 +6,12 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.TechiesWorld;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Player;
-
-import java.awt.font.TextHitInfo;
 
 /**
  * Created by shiping on 2/3/16.
@@ -103,7 +99,7 @@ public class Mine extends Item {
         } else if (currentState == State.TRANSITION && stateTime > 1) {
             currentState = State.ARMED;
             defineItem();
-        } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != TechiesWorld.playServices.getMyPosition()) {
+        } else if (currentState == State.ARMED && stateTime > 0.5 && playerID != TechiesWorld.playServices.getMyID()) {
             currentState = State.HIDDEN;
         } else if (currentState == State.EXPLODING & stateTime > 0.5) {
             destroy();
@@ -152,7 +148,7 @@ public class Mine extends Item {
         FixtureDef fdef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(24 / TechiesWorld.PPM, 24/ TechiesWorld.PPM);
-        if (currentState == State.ARMED && playerID != TechiesWorld.playServices.getMyPosition()) {
+        if (currentState == State.ARMED && playerID != TechiesWorld.playServices.getMyID()) {
             fdef.filter.categoryBits = TechiesWorld.MINE_BIT;
         } else {
             fdef.filter.categoryBits = TechiesWorld.NOTHING_BIT;

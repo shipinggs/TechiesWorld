@@ -55,7 +55,7 @@ public class Player extends Sprite {
         previousState = State.RESPAWN;
         playerIsRespawning = true;
 
-        playerID = TechiesWorld.playServices.getMyPosition();
+        playerID = TechiesWorld.playServices.getMyID();
         gold = 500;    // starting score/gold
 
         stateTimer = 0;
@@ -113,7 +113,7 @@ public class Player extends Sprite {
             coinSpawnedMsg[3] = (byte) index; //index
             int amount = getAmountDropped();
             coinSpawnedMsg[4] = (byte) amount; //amount
-            int playerID = TechiesWorld.playServices.getPlayerId();
+            int playerID = TechiesWorld.playServices.getMyID();
             TechiesWorld.playServices.putMyCoinInHashmap(playerID, 999, amount, index); //playerID, n, amount, index (999 are just place holder values since they will not be used
 
             TechiesWorld.playServices.broadcastMsg(coinSpawnedMsg);
@@ -197,9 +197,9 @@ public class Player extends Sprite {
                 bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
             } else if (playerID == 1) {
                 bdef.position.set(880 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
-            } else if (TechiesWorld.playServices.getMyPosition() == 2) {
+            } else if (TechiesWorld.playServices.getMyID() == 2) {
                 bdef.position.set(140 / TechiesWorld.PPM, 900 / TechiesWorld.PPM);
-            } else if (TechiesWorld.playServices.getMyPosition() == 3) {
+            } else if (TechiesWorld.playServices.getMyID() == 3) {
                 bdef.position.set(900 / TechiesWorld.PPM, 900 / TechiesWorld.PPM);
             }
         }else if (currentState == State.ALIVE) {
@@ -229,7 +229,7 @@ public class Player extends Sprite {
         public byte[] sendPositionBuffer () { //sending player position to other device
             byte[] position = new byte[6];
             position[0] = (byte) 'P';
-            position[1] = (byte) TechiesWorld.playServices.getMyPosition(); //id of player (0-3)
+            position[1] = (byte) TechiesWorld.playServices.getMyID(); //id of player (0-3)
             int x = (int) (b2body.getPosition().x * TechiesWorld.PPM); //multiply with ppm value to get int in hundreds range
             int y = (int) (b2body.getPosition().y * TechiesWorld.PPM);
             position[2] = (byte) (x / 100);
@@ -242,7 +242,7 @@ public class Player extends Sprite {
         public byte[] sendStatusBuffer () {
             byte[] status = new byte[3];
             status[0] = (byte) 'S';
-            status[1] = (byte) TechiesWorld.playServices.getMyPosition();
+            status[1] = (byte) TechiesWorld.playServices.getMyID();
             if (playerIsDead) {
                 status[2] = (byte) 'D';
             } else {

@@ -18,14 +18,14 @@ public interface PlayServices {
     public boolean getAbleToStart();
     public void broadcastMsg(byte[] mMsgBuf);
     public void destroy();
-    public int getMyPosition();
+    public int getMyID();
     public int[] getPlayerPosition(int id);
     public String getPlayerStatus(int id);
 
 
 
 
-    public int getPlayerId();
+//    public int getPlayerId();
     //coins
     public int getUnspawnedIndex();
     public void incrementUnspawnedIndex();
@@ -49,5 +49,7 @@ public interface PlayServices {
 
     public ArrayList<int[]> getMinePositionAndClear();
     public boolean mineIsEmpty();
+
+    public int getRoomSize();
 
 }
