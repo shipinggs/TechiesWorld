@@ -618,7 +618,6 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 //
 //		}
 		unspawnedIndex = unspawnedIndex + (getMyID() * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
-
 	}
 
 	@Override

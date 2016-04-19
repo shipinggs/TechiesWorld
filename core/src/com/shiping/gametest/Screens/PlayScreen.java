@@ -78,25 +78,21 @@ public class PlayScreen implements Screen {
     private Music music;
 
     //list of positions for coin spawn, format: {{x1,y1},{x2,y2},...,{xn,yn}}
-    /*private float[][] coinSpawnPositions0 = {{0.3f,0.9f},{0.5f,0.9f},{0.7f,0.9f}};
-    private float[][] coinSpawnPositions1 = {{0.3f,1.2f},{0.5f,1.2f},{0.7f,1.2f}};
-    private float[][] coinSpawnPositions2 = {{0.3f,1.5f},{0.5f,1.5f},{0.7f,1.5f}};
-    private float[][] coinSpawnPositions3 = {{0.3f,1.8f},{0.5f,1.8f},{0.7f,1.8f}};*/
-    private float[][] coinSpawnPositions0 = {{0.8f,0.6f},{1.0f,0.6f},{1.2f,0.6f}};
+    /*private float[][] coinSpawnPositions0 = {{0.8f,0.6f},{1.0f,0.6f},{1.2f,0.6f}};
     private float[][] coinSpawnPositions1 = {{0.8f,0.8f},{1.0f,0.8f},{1.2f,0.8f}};
     private float[][] coinSpawnPositions2 = {{0.8f,1.0f},{1.0f,1.0f},{1.2f,1.0f}};
-    private float[][] coinSpawnPositions3 = {{0.8f,1.2f},{1.0f,1.2f},{1.2f,1.2f}};
-    /*private float[][] coinSpawnPositions0 = {{0.3f,0.4f},{0.9f,0.4f},{1.5f,0.4f},{0.3f,0.7f},{0.7f,0.7f},{1.0f,0.7f},{1.5f,0.7f},{0.3f,1.0f},{0.9f,1.0f},{1.5f,1.0f}};
+    private float[][] coinSpawnPositions3 = {{0.8f,1.2f},{1.0f,1.2f},{1.2f,1.2f}};*/
+    private float[][] coinSpawnPositions0 = {{0.3f,0.4f},{0.9f,0.4f},{1.5f,0.4f},{0.3f,0.7f},{0.7f,0.7f},{1.0f,0.7f},{1.5f,0.7f},{0.3f,1.0f},{0.9f,1.0f},{1.5f,1.0f}};
     private float[][] coinSpawnPositions1 = {{0.5f,1.2f},{1.1f,1.2f},{1.7f,1.2f},{0.5f,1.5f},{0.9f,1.5f},{1.2f,1.5f},{1.7f,1.5f},{0.5f,1.8f},{1.1f,1.8f},{1.7f,1.8f}};
-    private float[][] coinSpawnPositions2 = {{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f}};
-    private float[][] coinSpawnPositions3 = {{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f}};*/
+    private float[][] coinSpawnPositions2 = {{0.3f,0.6f},{0.9f,0.6f},{1.5f,0.6f},{0.3f,0.9f},{0.7f,0.9f},{1.0f,0.9f},{1.5f,0.9f},{0.3f,1.2f},{0.9f,1.2f},{1.5f,1.2f}};
+    private float[][] coinSpawnPositions3 = {{0.5f,1.0f},{1.1f,1.0f},{1.7f,1.0f},{0.5f,1.3f},{0.9f,1.3f},{1.2f,1.3f},{1.7f,1.3f},{0.5f,1.6f},{1.1f,1.6f},{1.7f,1.6f}};
     private float[][][] allCoinSpawnPositions = {coinSpawnPositions0, coinSpawnPositions1, coinSpawnPositions2, coinSpawnPositions3};
-    //private boolean[] coinSpawnPositionsOccupied ={false, false, false, false, false, false, false, false, false, false};
-    private boolean[] coinSpawnPositionsOccupied ={false, false, false};
-    int numOfCoinSpawnPositionsPerPlayer = 3;
+    private boolean[] coinSpawnPositionsOccupied ={false, false, false, false, false, false, false, false, false, false};
+    //private boolean[] coinSpawnPositionsOccupied ={false, false, false};
+    int numOfCoinSpawnPositionsPerPlayer = 10;
     long timeCounter = 0;
 
-    private int spawnTime = 300; //increase value to reduce frequency of coin spawn
+    private int spawnTime = 1000; //increase value to reduce frequency of coin spawn,
 
     private int mineId;
     private Map<Integer,Mine> mineMap;
@@ -309,6 +305,9 @@ public class PlayScreen implements Screen {
 
         // randomly spawn coins every set time interval
         if(timeCounter%spawnTime==0){ //change % value to adjust spawn frequency
+            if(spawnTime > 100){
+                spawnTime -= 40; //to maintain consistent coin spawn rate throughout the game
+            }
             Random rand = new Random();
             int  n = rand.nextInt(numOfCoinSpawnPositionsPerPlayer); //randomly generate a number from 0 to 2 to select coin spawn position
             if(!coinSpawnPositionsOccupied[n] && playerID >=0){ //playerID is initialised to -1 and will take sometime to be assigned bew value of 0-3
