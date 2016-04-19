@@ -1,6 +1,5 @@
 package com.shiping.gametest.Scenes;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -12,14 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.shiping.gametest.Screens.EndScreen;
-import com.shiping.gametest.Sprites.Player;
+import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 1/3/16.
+ * Created by shiping on 19/4/16.
  */
-public class Hud implements Disposable {
+public class TutorialHud implements Disposable {
     public Stage stage;
     // We want a separate viewport for our hud as it should stay locked on screen
     private Viewport viewport;
@@ -27,20 +25,20 @@ public class Hud implements Disposable {
 
     private int worldTimer;
     private float timeCount;
-    private static Integer score;
+    private static int score;
 
-    private Player player;
-    private TechiesWorld game;
+    private TutorialPlayer player;
 
-    Label countDownLabel;
-    Label scoreLabel;
-    Label timeLabel;
-    Label goldLabel;
+    private Label countDownLabel;
+    private Label scoreLabel;
+    private Label timeLabel;
+    private Label goldLabel;
 
-    public Hud (SpriteBatch sb, Player player, TechiesWorld game) {
+
+
+    public TutorialHud (SpriteBatch sb, TutorialPlayer player) {
         this.player = player;
-        this.game=game;
-        worldTimer = 140;
+        worldTimer = 100;
         timeCount = 0;
         score = player.getGoldAmount();
 
@@ -72,30 +70,19 @@ public class Hud implements Disposable {
         timeCount += dt;
         score = player.getGoldAmount();  // update score from player
         scoreLabel.setText((String.format("%06d", score)));
-        if (timeCount >= 1) {   // one second
+        if (timeCount >= 1 && worldTimer > 0) {   // one second
             worldTimer--;
-            if (worldTimer==0){
-                TechiesWorld.playServices.putPlayerScore(score);
-                TechiesWorld.playServices.broadcastReliableMsg(sendScoreBuffer());
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new EndScreen(game));
-
-            }
             countDownLabel.setText(String.format("%03d", worldTimer));
             timeCount = 0;
         }
     }
 
+    public int getWorldTimer() {
+        return worldTimer;
+    }
+
     @Override
     public void dispose() {
         stage.dispose();
-    }
-
-    public byte[] sendScoreBuffer(){
-        byte[] myScore=new byte[4];
-        myScore[0]=(byte) 'L';
-        myScore[1]=(byte) TechiesWorld.playServices.getMyID();
-        myScore[2]=(byte) (score/100);
-        myScore[3]=(byte) (score%100);
-        return myScore;
     }
 }
