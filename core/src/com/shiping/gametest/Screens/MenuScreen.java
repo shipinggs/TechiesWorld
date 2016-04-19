@@ -35,6 +35,7 @@ public class MenuScreen implements Screen {
     private Texture calibriFontTexture;
     private TextureAtlas buttonsAtlas; //** Holds the entire image for all buttons **//
     private Music music;
+    private Texture menuScreenBackground;
 
 
     public MenuScreen(TechiesWorld game){
@@ -82,9 +83,15 @@ public class MenuScreen implements Screen {
         styleInvitationBox.down=buttonSkin.getDrawable("button_logout");
         styleInvitationBox.font=font;
         invitationBoxBtn=new TextButton("",styleInvitationBox);
-        invitationBoxBtn.setPosition(100,500);
+        invitationBoxBtn.setPosition(100, 500);
         invitationBoxBtn.setHeight(200);
         invitationBoxBtn.setWidth(400);
+
+        //Background image
+        menuScreenBackground = new Texture("MenuPage/Background.png");
+        //batch.begin();
+        //batch.draw(menuScreenBackground, 0, 0, camera.viewportWidth, camera.viewportHeight);
+        //batch.end();
 
         music = game.getManager().get("audio/music/bgm1.ogg", Music.class);
         music.setLooping(true);
@@ -162,6 +169,8 @@ public class MenuScreen implements Screen {
                 dispose();
             }
         }
+        //Gdx.app.log("width", ""+Gdx.graphics.getWidth());
+        //Gdx.app.log("height", ""+Gdx.graphics.getHeight());
     }
 
     /**
@@ -172,14 +181,17 @@ public class MenuScreen implements Screen {
     @Override
     public void render(float delta) {
         update();
-        Gdx.gl.glClearColor(0, 99, 0, 1); // rgba. clear screen with green
+        //Gdx.gl.glClearColor(0, 99, 0, 1); // rgba. clear screen with green
+        //Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
+        //Gdx.gl.glClearColor(1, 0, 0, 0); // rgba. clear screen with black
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 
         stage.act();
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        stage.draw();
+        batch.draw(menuScreenBackground, 0, 0);
+        //stage.draw();
         batch.end();
 
 
@@ -229,6 +241,7 @@ public class MenuScreen implements Screen {
         stage.dispose();
         calibriFontTexture.dispose();
         font.dispose();
+        menuScreenBackground.dispose();
         buttonsAtlas.dispose();
         buttonSkin.dispose();
         music.dispose();
