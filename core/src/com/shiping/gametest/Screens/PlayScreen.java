@@ -82,13 +82,18 @@ public class PlayScreen implements Screen {
     private float[][] coinSpawnPositions1 = {{0.3f,1.2f},{0.5f,1.2f},{0.7f,1.2f}};
     private float[][] coinSpawnPositions2 = {{0.3f,1.5f},{0.5f,1.5f},{0.7f,1.5f}};
     private float[][] coinSpawnPositions3 = {{0.3f,1.8f},{0.5f,1.8f},{0.7f,1.8f}};*/
-    private float[][] coinSpawnPositions0 = {{0.3f,0.4f},{0.9f,0.4f},{1.5f,0.4f},{0.3f,0.7f},{0.7f,0.7f},{1.0f,0.7f},{1.5f,0.7f},{0.3f,1.0f},{0.9f,1.0f},{1.5f,1.0f}};
+    private float[][] coinSpawnPositions0 = {{0.8f,0.6f},{1.0f,0.6f},{1.2f,0.6f}};
+    private float[][] coinSpawnPositions1 = {{0.8f,0.8f},{1.0f,0.8f},{1.2f,0.8f}};
+    private float[][] coinSpawnPositions2 = {{0.8f,1.0f},{1.0f,1.0f},{1.2f,1.0f}};
+    private float[][] coinSpawnPositions3 = {{0.8f,1.2f},{1.0f,1.2f},{1.2f,1.2f}};
+    /*private float[][] coinSpawnPositions0 = {{0.3f,0.4f},{0.9f,0.4f},{1.5f,0.4f},{0.3f,0.7f},{0.7f,0.7f},{1.0f,0.7f},{1.5f,0.7f},{0.3f,1.0f},{0.9f,1.0f},{1.5f,1.0f}};
     private float[][] coinSpawnPositions1 = {{0.5f,1.2f},{1.1f,1.2f},{1.7f,1.2f},{0.5f,1.5f},{0.9f,1.5f},{1.2f,1.5f},{1.7f,1.5f},{0.5f,1.8f},{1.1f,1.8f},{1.7f,1.8f}};
     private float[][] coinSpawnPositions2 = {{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f}};
-    private float[][] coinSpawnPositions3 = {{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f}};
+    private float[][] coinSpawnPositions3 = {{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f},{0f,0f}};*/
     private float[][][] allCoinSpawnPositions = {coinSpawnPositions0, coinSpawnPositions1, coinSpawnPositions2, coinSpawnPositions3};
-    private boolean[] coinSpawnPositionsOccupied ={false, false, false, false, false, false, false, false, false, false};
-    int numOfCoinSpawnPositionsPerPlayer = 10;
+    //private boolean[] coinSpawnPositionsOccupied ={false, false, false, false, false, false, false, false, false, false};
+    private boolean[] coinSpawnPositionsOccupied ={false, false, false};
+    int numOfCoinSpawnPositionsPerPlayer = 3;
     long timeCounter = 0;
 
     private int spawnTime = 300; //increase value to reduce frequency of coin spawn
@@ -123,6 +128,7 @@ public class PlayScreen implements Screen {
 
         player = new Player(this);
 
+
         while (TechiesWorld.playServices.getMyID()==-1){}
         //TODO change this number when implementing more players
         for (int i=0;i<TechiesWorld.playServices.getRoomSize();i++){
@@ -151,6 +157,8 @@ public class PlayScreen implements Screen {
         music = audioManager.get("audio/music/bgm2.ogg", Music.class);
         music.setLooping(true);
         music.play();
+
+        TechiesWorld.playServices.setPlayerCoinUnspawnedIndex();
     }
 
     public void spawnItem(ItemDef idef) {
@@ -278,7 +286,7 @@ public class PlayScreen implements Screen {
                 float y = allCoinSpawnPositions[coinInfo[0]][coinInfo[1]][1];
                 int index = coinInfo[3];
                 this.spawnItem(new ItemDef(new Vector2(x, y), Coin.class, index));
-      Gdx.app.log("spawning coin from other device"," at x: "+x+" , at y: "+y);
+//      Gdx.app.log("spawning coin from other device"," at x: "+x+" , at y: "+y);
             }else if(coinInfo!=null && coinInfo[0] >= 4){ //when coinInfo[0] >= 4 means the coin is spawned during a player's death
                 float x = coinInfo[0]/60f; //divide by 60 since value was multiplied by 60 on other device before sending
                 float y = coinInfo[1]/60f;
