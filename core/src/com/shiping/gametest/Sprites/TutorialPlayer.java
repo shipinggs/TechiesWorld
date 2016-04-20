@@ -56,7 +56,7 @@ public class TutorialPlayer extends Sprite {
         previousState = State.RESPAWN;
         playerIsRespawning = true;
 
-        playerID = 1;   // player 0 for tutorial
+        playerID = 1;   // player 1 for tutorial
         gold = 500;    // starting score/gold
 
         stateTimer = 0;
@@ -99,10 +99,9 @@ public class TutorialPlayer extends Sprite {
             playerIsDead = false;
             playerIsRespawning = true;
             currentState = State.RESPAWN;
+            getAmountDropped(); //to deduct score
 
-
-            screen.spawnItem(new TutorialItemDef(new Vector2(b2body.getPosition().x, b2body.getPosition().y), TutorialCoin.class, TechiesWorld.playServices.getUnspawnedIndex()));
-            TechiesWorld.playServices.incrementUnspawnedIndex();
+            screen.spawnItem(new TutorialItemDef(new Vector2(b2body.getPosition().x, b2body.getPosition().y), TutorialCoin.class));
 
             world.destroyBody(b2body);
             definePlayer();
@@ -143,8 +142,11 @@ public class TutorialPlayer extends Sprite {
     }
 
     public int getAmountDropped() {
-        int amount = gold / 3 < 200 ? 200 : gold / 3;
+        int amount = gold / 4 < 150 ? 150 : gold / 4;
         gold -= amount;
+        if (gold<=0) {
+            gold = 0;
+        }
         return amount;
     }
 
@@ -168,12 +170,16 @@ public class TutorialPlayer extends Sprite {
 
     public void setPlayerDead() {
         playerIsDead = true;
+        screen.setHasDied(true);
     }
 
     public boolean isPlayerDead() {
         return playerIsDead;
     }
 
+    public int getPlayerID() {
+        return playerID;
+    }
 
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
@@ -205,7 +211,7 @@ public class TutorialPlayer extends Sprite {
             fdef.filter.categoryBits = TechiesWorld.PLAYER_BIT;
         }
         fdef.filter.maskBits = TechiesWorld.WALL_BIT |
-                TechiesWorld.MINE_BIT |
+                TechiesWorld.TUTMINE_BIT |
                 TechiesWorld.TUTCOIN_BIT;
 
         fdef.shape = shape;

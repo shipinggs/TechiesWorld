@@ -40,7 +40,7 @@ public class Hud implements Disposable {
     public Hud (SpriteBatch sb, Player player, TechiesWorld game) {
         this.player = player;
         this.game=game;
-        worldTimer = 140;
+        worldTimer = 10;
         timeCount = 0;
         score = player.getGoldAmount();
 

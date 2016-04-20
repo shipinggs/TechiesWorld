@@ -3,6 +3,7 @@ package com.shiping.gametest.Screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -50,6 +51,7 @@ public class EndScreen implements Screen {
 
         hud2=new Hud2(game.batch);
 
+
         //font
         calibriFontTexture = new Texture(Gdx.files.internal("fonts/hudfont.png"));
         font = new BitmapFont(Gdx.files.internal("fonts/hudfont.fnt"), new TextureRegion(calibriFontTexture), false);
@@ -77,6 +79,8 @@ public class EndScreen implements Screen {
         backToMenuBtn.setWidth(Gdx.graphics.getWidth() / 2);
         backToMenuBtn.setPosition(Gdx.graphics.getWidth() - (int)(backToMenuBtn.getWidth()/1.5),(int)((0-backToMenuBtn.getHeight())/2.2));
 
+
+        game.getManager().get("audio/sounds/win.wav", Sound.class).play();
     }
     @Override
     public void show() {

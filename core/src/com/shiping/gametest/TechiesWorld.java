@@ -21,6 +21,7 @@ public class TechiesWorld extends Game {
 	public static final short COIN_BIT = 32;
 	public static final short RESPAWN_BIT = 64;
 	public static final short TUTCOIN_BIT = 128;
+	public static final short TUTMINE_BIT = 256;
 
 	public SpriteBatch batch;
 	private AssetManager manager;
@@ -44,6 +45,7 @@ public class TechiesWorld extends Game {
 		manager.load("audio/sounds/die2.wav", Sound.class);
 		manager.load("audio/sounds/explosion.wav", Sound.class);
 		manager.load("audio/sounds/explosion2.wav", Sound.class);
+		manager.load("audio/sounds/win.wav", Sound.class);
 		manager.finishLoading();
 
 		setScreen(new LoginScreen(this));

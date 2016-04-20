@@ -33,17 +33,6 @@ public abstract class TutorialItem extends Sprite {
         destroyed = false;
     }
 
-    public TutorialItem(TutorialScreen screen, float x, float y, int index) {
-        this.screen = screen;
-        this.world = screen.getWorld();
-        this.index = index;
-        setPosition(x, y);
-        setBounds(getX(), getY(), 64 / TechiesWorld.PPM, 64 / TechiesWorld.PPM);
-        defineItem();
-        toDestroy = false;
-        destroyed = false;
-    }
-
     public abstract void defineItem();
     public abstract void contact(TutorialPlayer player);
 
