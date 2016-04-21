@@ -27,7 +27,7 @@ public class LoginScreen implements Screen {
 
     private Stage stage; //** stage holds the Button **//
     private TextButton loginBtn;
-    private Skin loginScreenSkin; //** images are used as skins of the button **//
+    private Skin loginScreenSkin; //skin to access drawables to login screen UI elements
     private TextButton gameTitle;
     private BitmapFont font;
     private Texture calibriFontTexture;
@@ -80,8 +80,7 @@ public class LoginScreen implements Screen {
         int buttonX = (int)(Gdx.graphics.getWidth()/1.75) - (int)loginBtn.getWidth()/2;
         int buttonY = Gdx.graphics.getHeight()/8;
         loginBtn.setPosition(buttonX, 2*buttonY); //** Button location **//
-        //loginBtn.setHeight(200); //** Button Height **//
-        //loginBtn.setWidth(400); //** Button Width **//
+
 
         //Game title
         TextButton.TextButtonStyle styleTitle = new TextButton.TextButtonStyle(); //** Button properties **//
@@ -94,12 +93,6 @@ public class LoginScreen implements Screen {
         int titleX = Gdx.graphics.getWidth()/2 - (int) gameTitle.getWidth()/2;
         gameTitle.setPosition(titleX, 5 * buttonY); //** Button location **//
     }
-
-    public void login(){
-        //To do: login to user's google account
-        TechiesWorld.playServices.signIn();
-    }
-
 
     /**
      * Called when this screen becomes the current screen for a {@link Game}.

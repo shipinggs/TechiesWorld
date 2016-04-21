@@ -26,10 +26,8 @@ import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.example.games.basegameutils.BaseGameUtils;
 
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +71,6 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	//variables used to assign playerID (0-3)
 	String mMyId = null;
-	int mMyIdHashcode = 0;
 	ArrayList<Integer> playersMyIdHashcode = new ArrayList<>(); //stores hashcode of all player's mMyID
 
 	Participant me = null;
@@ -97,10 +94,6 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	int numOfCoinsToSpawn = 0;
 	int[] unspawnedGetIndexArray = {-128, -64, 0, 64}; //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 	Object numOfCoinsToSpawnLock = new Object();
-
-
-	Map<Integer, int[]> collectedCoinPositions = new HashMap<>();
-
 
 	int collectedIndex = 0;
 	int numOfCoinsToRemove = 0;
@@ -454,10 +447,6 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			mParticipants = room.getParticipants();
 			mMyId = room.getParticipantId(Games.Players.getCurrentPlayerId(mGoogleApiClient));
 			me = room.getParticipant(mMyId);
-			calcMyIdHashCode();
-
-//			byte[] initOrderMsg = toBytesInitMsg(mMyIdHashcode);
-//			broadcastMsg(initOrderMsg);
 		}
 	}
 
@@ -595,24 +584,7 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	}
 
 
-	public void setPlayerCoinUnspawnedIndex() { //obtain a playerID (0-3) for this device's player
-		//largest hashcode ranked at rank0, playerID = 0
-//		synchronized (playersMyIdHashcode) {
-//			playersMyIdHashcode.add(mMyIdHashcode);
-//			Collections.sort(playersMyIdHashcode); // Sort the arraylist, last element is the largest
-//			for(int i=0; i<playersMyIdHashcode.size(); i++){
-//				//Toast.makeText(getApplicationContext(), "hashcode: "+playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i)), Toast.LENGTH_LONG).show();
-//				if(mMyIdHashcode==playersMyIdHashcode.get(playersMyIdHashcode.size() - (1 + i))){ //gets the last item in first iteration, largest for an ascending sort
-//					playerId = i;
-//					//Toast.makeText(getApplicationContext(), "playerId assigned: "+playerId, Toast.LENGTH_LONG).show();
-//					//Toast.makeText(getApplicationContext(), "playersMy size: "+playersMyIdHashcode.size(), Toast.LENGTH_SHORT).show();
-//					unspawnedIndex = unspawnedIndex + (i * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
-//
-//				}
-//
-//			}
-//
-//		}
+	public void setPlayerCoinUnspawnedIndex() {
 		unspawnedIndex = unspawnedIndex + (getMyID() * 64); //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
 	}
 
@@ -678,22 +650,6 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 			putOtherPlayerCoinInHashmap(player_Id, n, amount, index);
 		}
-	}
-
-	public byte[] toBytesInitMsg(int i) {
-		byte[] result = new byte[5];
-
-		result[0] = (byte) 'o';
-		result[1] = (byte) (i >> 24);
-		result[2] = (byte) (i >> 16);
-		result[3] = (byte) (i >> 8);
-		result[4] = (byte) (i /*>> 0*/);
-
-		return result;
-	}
-
-	public void calcMyIdHashCode() {
-		mMyIdHashcode = mMyId.hashCode();
 	}
 
 	public ArrayList<int[]> getMinePositionAndClear() {

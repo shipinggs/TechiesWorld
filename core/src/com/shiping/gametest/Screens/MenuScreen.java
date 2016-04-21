@@ -33,7 +33,7 @@ public class MenuScreen implements Screen {
     private TextButton invitationBoxBtn;
     private TextButton tutorialBtn;
     private Skin buttonSkin; //** images are used as skins of the button **//
-    private BitmapFont font; //** same as that used in Tut 7 **//
+    private BitmapFont font;
     private Texture calibriFontTexture;
     private TextureAtlas buttonsAtlas; //** Holds the entire image for all buttons **//
     private TextureAtlas menuLoginBackgroundAtlas;
@@ -75,7 +75,7 @@ public class MenuScreen implements Screen {
         menuLoginBackground.setWidth(Gdx.graphics.getWidth());
 
 
-        //button
+        //buttons
         buttonsAtlas = new TextureAtlas("MenuPage/menuscreenbuttons.atlas");
         buttonSkin = new Skin();
         buttonSkin.addRegions(buttonsAtlas);
@@ -88,8 +88,6 @@ public class MenuScreen implements Screen {
         int buttonX = (int)(Gdx.graphics.getWidth()/1.75) - (int)logoutBtn.getWidth()/2;
         int buttonY = Gdx.graphics.getHeight()/8;
         logoutBtn.setPosition(buttonX, buttonY); //** Button location **//
-        //logoutBtn.setHeight(51); //** Button Height **//
-        //logoutBtn.setWidth(400); //** Button Width **//
 
         TextButton.TextButtonStyle styleStartGame = new TextButton.TextButtonStyle(); //** Button properties **//
         styleStartGame.up = buttonSkin.getDrawable("Quickgame");
@@ -97,9 +95,6 @@ public class MenuScreen implements Screen {
         styleStartGame.font = font;
         startGameBtn = new TextButton("",styleStartGame); //empty string since text is already on button
         startGameBtn.setPosition(buttonX, 2*buttonY); //** Button location **//
-        //startGameBtn.setHeight(200); //** Button Height **//
-        //startGameBtn.setWidth(400); //** Button Width **//
-
 
         TextButton.TextButtonStyle styleInvitationBox=new TextButton.TextButtonStyle();
         styleInvitationBox.up=buttonSkin.getDrawable("InvitePlayers");
@@ -107,8 +102,6 @@ public class MenuScreen implements Screen {
         styleInvitationBox.font=font;
         invitationBoxBtn=new TextButton("",styleInvitationBox);
         invitationBoxBtn.setPosition(buttonX, 3*buttonY);
-        //invitationBoxBtn.setHeight(200);
-        //invitationBoxBtn.setWidth(400);
 
         TextButton.TextButtonStyle styleTutorial = new TextButton.TextButtonStyle();
         styleTutorial.up=buttonSkin.getDrawable("Tutorial");
@@ -226,8 +219,6 @@ public class MenuScreen implements Screen {
                 dispose();
             }
         }
-        //Gdx.app.log("width", ""+Gdx.graphics.getWidth());
-        //Gdx.app.log("height", ""+Gdx.graphics.getHeight());
     }
 
     /**
@@ -239,8 +230,6 @@ public class MenuScreen implements Screen {
     public void render(float delta) {
         update();
         Gdx.gl.glClearColor(0, 99, 0, 1); // rgba. clear screen with green
-        //Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
-        //Gdx.gl.glClearColor(1, 0, 0, 0); // rgba. clear screen with black
         Gdx.gl.glClear((GL20.GL_COLOR_BUFFER_BIT));
 
         stage.act();
