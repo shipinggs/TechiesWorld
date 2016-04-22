@@ -170,7 +170,11 @@ public class PlayScreen implements Screen {
                 synchronized (items){
                     items.add(mine);
                 }
-                // TODO replace playerID parameter with received message
+                /**
+                 * Each player will have a certain range of mine ID, for now we set each player
+                 * can plant maximum 3 mines. It will plant follow the 1,2,3 sequence. The new coming
+                 * mines will replace the previous mine
+                 */
                 if (mineId>=(TechiesWorld.playServices.getMyID()+1)*3){
                     mineId=TechiesWorld.playServices.getMyID()*3;
                 }
@@ -187,6 +191,10 @@ public class PlayScreen implements Screen {
                     } catch (Exception e){}
                 }
 
+                /**
+                 * Add the mine into a map for future find it based on the mineID and send the information
+                 * to other player
+                 */
                 mineMap.put(mineId,mine);
                 TechiesWorld.playServices.broadcastMsg(sendPlantMineBuffer(idef.position.x, idef.position.y));
                 mine.setMineId(mineId);
@@ -199,10 +207,16 @@ public class PlayScreen implements Screen {
 
             }
         }
+        /**
+         * Check whether received message for mines
+         */
         if (!TechiesWorld.playServices.mineIsEmpty()){
             ArrayList<int[]> arrayList=TechiesWorld.playServices.getMinePositionAndClear();
             for (int[] positions:arrayList){
                 if (positions[0]==1){
+                    /**
+                     * The message requires to plant new mine
+                     */
                     int minesId=positions[1];
                     int playerId=positions[2];
                     float x=(positions[3]*100+positions[4])/TechiesWorld.PPM;
@@ -214,6 +228,9 @@ public class PlayScreen implements Screen {
                     }
                     mineMap.put(minesId,mine);
                 }else if (positions[0]==0){
+                    /**
+                     * The message requires to remove a mine
+                     */
                     int minesId=positions[1];
                     if (mineMap.get(minesId)!=null){
                         try {
@@ -334,11 +351,13 @@ public class PlayScreen implements Screen {
         }
         timeCounter++;
 
-        // TODO will need to update other player sprites here
 
         // update items (coin, mines) sprites
         for (Item item: items) {
             item.update(dt);
+            /**
+             * Clear the item array if the element is already destroyed
+             */
             if (item.isDestroyed()){
                 items.removeValue(item,true);
             }

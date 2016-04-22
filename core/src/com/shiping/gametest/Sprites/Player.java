@@ -195,6 +195,9 @@ public class Player extends Sprite {
     public void definePlayer() {
         BodyDef bdef = new BodyDef();
         if (currentState == State.RESPAWN) {
+            /**
+             * Initialize the respawn point for player based on the unique ID
+             */
             if (playerID == 0) {
                 bdef.position.set(140 / TechiesWorld.PPM, 140 / TechiesWorld.PPM);
             } else if (playerID == 1) {
@@ -230,7 +233,7 @@ public class Player extends Sprite {
         }
 
 
-        public byte[] sendPositionBuffer () { //sending player position to other device
+        public byte[] sendPositionBuffer () { //Build the position buffer
             byte[] position = new byte[6];
             position[0] = (byte) 'P';
             position[1] = (byte) TechiesWorld.playServices.getMyID(); //id of player (0-3)

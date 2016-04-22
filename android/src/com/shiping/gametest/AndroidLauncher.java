@@ -36,15 +36,16 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		RealTimeMessageReceivedListener, RoomStatusUpdateListener, RoomUpdateListener
 		, GoogleApiClient.ConnectionCallbacks,OnInvitationReceivedListener,GoogleApiClient.OnConnectionFailedListener {
 
-//	private GameHelper gameHelper;
 	private final static int requestCode = 1;
+	//collect the room id
 	String mRoomId = null;
 
+	//Tag of the game
 	final static String TAG = "TechiesWorld";
+	//flag to show wether can switch to gameScreen
 	private boolean ableToStart = false;
 
 	// arbitrary request code for the waiting room UI.
-	// This can be any integer that's unique in your Activity.
 	final static int RC_SELECT_PLAYERS = 10000;
 	final static int RC_INVITATION_INBOX = 10001;
 	final static int RC_WAITING_ROOM = 10002;
@@ -73,20 +74,24 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	String mMyId = null;
 	ArrayList<Integer> playersMyIdHashcode = new ArrayList<>(); //stores hashcode of all player's mMyID
 
+	//find the player's participant object
 	Participant me = null;
 
+	//unique id for this player, initialize to -1
 	int myId = -1;
 
+	//map stored the position of certain player based on the id
 	Map<Integer, int[]> playerPositions = new HashMap<>();
 
+	//map stored the status of certain player based on the id
 	Map<Integer, String> playerStatus = new HashMap<>();
 
+	//is there any other player press the start game button so that we need to quite the waiting room?
 	boolean mWaitingRoomFinishedFromCode = false;
 
+	//set the minimum player numbers
 	final static int MIN_PLAYERS = 2;
 
-
-	String mIncomingInvitationId = null;
 
 	//Variables for coins
 	Map<Integer, int[]> unspawnedCoinPositions = new HashMap<>();
@@ -135,34 +140,28 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-//		gameHelper = new GameHelper(this, GameHelper.CLIENT_GAMES);
-//		gameHelper.enableDebugLog(false);
-//		GameHelper.GameHelperListener gameHelperListener = new GameHelper.GameHelperListener() {
-//			@Override
-//			public void onSignInFailed() {
-//				Toast.makeText(getApplicationContext(), "sign in failed", Toast.LENGTH_SHORT).show();
-//			}
-//
-//			@Override
-//			public void onSignInSucceeded() {
-//				Toast.makeText(getApplicationContext(), "sign in succeeded", Toast.LENGTH_SHORT).show();
-//			}
-//		};
-//
-//		gameHelper.setup(gameHelperListener);
 		super.onCreate(savedInstanceState);
+		/**
+		 * Create the Google Api Client with access to Games
+		 */
 		mGoogleApiClient=new GoogleApiClient.Builder(this)
 				.addConnectionCallbacks(this)
 				.addOnConnectionFailedListener(this)
 				.addApi(Games.API).addScope(Games.SCOPE_GAMES)
 				.build();
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+		/**
+		 * Initialize the game
+		 */
 		initialize(new TechiesWorld(this), config);
 	}
 
 
 	@Override
 	protected void onStart() {
+		/**
+		 * when the game starts, automatically log in first
+		 */
 		if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
 			Log.w(TAG,
 					"GameHelper: client was already connected on onStart()");
@@ -173,6 +172,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		super.onStart();
 	}
 
+	/**
+	 * When the game stop, quite the room and stop the program
+	 */
 	@Override
 	protected void onStop() {
 		Log.d(TAG, "**** got onStop");
@@ -182,9 +184,18 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		super.onStop();
 	}
 
+	/**
+	 * Handle the different reqestCode called back from the program
+	 * @param requestCode
+	 * @param resultCode
+	 * @param data
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		/**
+		 * Handle the waiting room situation
+		 */
 		if (requestCode == RC_WAITING_ROOM) {
 			if (mWaitingRoomFinishedFromCode){
 				if (mParticipants != null) {
@@ -207,6 +218,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 				leaveRoom();
 			}
 		}
+		/**
+		 * Handle the result of the "Select players UI" we launched when the user clicked the
+		 * "Invite friends" button. We react by creating a room with those players.
+		 */
 		if (requestCode == RC_SELECT_PLAYERS) {
 			if (resultCode != Activity.RESULT_OK) {
 				Log.w(TAG, "*** select players UI cancelled, " + resultCode);
@@ -237,6 +252,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			}
 			Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
 	}
+		/**
+		 * Handle the result of the invitation inbox UI, where the player can pick an invitation
+		 * to accept. We react by accepting the selected invitation, if any.
+		 */
 		if (requestCode == RC_INVITATION_INBOX) {
 			if (resultCode != Activity.RESULT_OK) {
 				Log.w(TAG, "*** select players UI cancelled, " + resultCode);
@@ -246,8 +265,12 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			Log.d(TAG, "Invitation inbox UI succeeded.");
 			Bundle extras = data.getExtras();
 			Invitation inv = extras.getParcelable(Multiplayer.EXTRA_INVITATION);
+			// accept invitation
 			acceptInviteToRoom(inv.getInvitationId());
 		}
+		/**
+		 * Handle the sign in situation
+		 */
 		if (requestCode==RC_SIGN_IN){
 			Log.d(TAG, "onActivityResult with requestCode == RC_SIGN_IN, responseCode="
 					+ resultCode + ", intent=" + data);
@@ -262,6 +285,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 
+	/**
+	 * 	Accept the given invitation.
+	 */
 	void acceptInviteToRoom(String invId) {
 		// accept the invitation
 		Log.d(TAG, "Accepting invitation: " + invId);
@@ -273,6 +299,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		Games.RealTimeMultiplayer.join(mGoogleApiClient, roomConfigBuilder.build());
 	}
 
+	/**
+	 * Handle the sign in button
+	 */
 	@Override
 	public void signIn() {
 		Log.d(TAG, "Sign-in button clicked");
@@ -280,6 +309,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		mGoogleApiClient.connect();
 	}
 
+	/**
+	 * Handle the sign out button
+	 */
 	@Override
 	public void signOut() {
 		// user wants to sign out
@@ -290,8 +322,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		mGoogleApiClient.disconnect();
 	}
 
-
-
+	/**
+	 * Submit score to google leader board, might be used in the future
+	 * @param highScore
+	 */
 	@Override
 	public void submitScore(int highScore) {
 		if (isSignedIn()) {
@@ -299,6 +333,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Show the google achievement, might be used in the future
+	 */
 	@Override
 	public void showAchievement() {
 		if (isSignedIn()) {
@@ -308,6 +345,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Show the google leader board, might be used in the future
+	 */
 	@Override
 	public void showScore() {
 		if (isSignedIn()) {
@@ -318,12 +358,19 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Check wether is signed in or not
+	 * @return
+	 */
 	@Override
 	public boolean isSignedIn() {
 		return mGoogleApiClient.isConnected();
 	}
 
 
+	/**
+	 * Start a quick game with minimum two players maximum 4 players
+	 */
 	@Override
 	public void startQuickGame() {
 		final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 3;
@@ -339,16 +386,26 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	}
 
+	/**
+	 * Call this method when invitePlayer button is pressed
+	 */
 	public void invitePlayer() {
 		Intent intentInvite = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 3);
 		startActivityForResult(intentInvite, RC_SELECT_PLAYERS);
 	}
 
+	/**
+	 * Call this method when the showInivitationBox button is pressed
+	 */
 	public void showInvitationBox() {
 		Intent intentBox = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
 		startActivityForResult(intentBox, RC_INVITATION_INBOX);
 	}
 
+	/**
+	 * Handle the received message based on different header
+	 * @param realTimeMessage
+	 */
 	@Override
 	public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
 		byte[] buf = realTimeMessage.getMessageData();
@@ -356,6 +413,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			mWaitingRoomFinishedFromCode=true;
 			finishActivity(RC_WAITING_ROOM);
 		}else if (buf[0] == 'P') {
+			/**
+			 * Handle player's position
+			 */
 			int id = buf[1];
 			int[] position = new int[4];
 			for (int i = 2; i <= 5; i++) {
@@ -363,6 +423,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			}
 			playerPositions.put(id, position);
 		} else if (buf[0] == 'S') {
+			/**
+			 * Player's status
+			 */
 			int id = buf[1];
 			playerStatus.put(id, String.valueOf((char) buf[2]));
 		}else if (buf[0]=='c'){ //coin collected by other player , format of msg {'c', index}
@@ -374,6 +437,9 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			Log.wtf(TAG, "recv coin spawn msg from player: "+buf[1]+" n: "+buf[2]);
 
 		} else if (buf[0] == 'M') {
+			/**
+			 * Mines
+			 */
 			int[] mineValue = new int[7];
 			for (int i = 1; i <= 7; i++) {
 				mineValue[i - 1] = (int) buf[i];
@@ -385,25 +451,27 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}else if (buf[0]=='t'){ //test
 			int val = buf[1];
 			Toast.makeText(getApplicationContext(), "" + val, Toast.LENGTH_SHORT).show();
-		}else if(buf[0]=='M'){
-			int[] mineValue=new int[7];
-			for (int i=1;i<=7;i++){
-				mineValue[i-1]=(int)buf[i];
-			}
-			synchronized (minePosition){
-				minePosition.add(mineValue);
-			}
 		}else if (buf[0]=='L'){
+			/**
+			 * Final score
+			 */
 			int score=(int)(buf[2])*100+(int)(buf[3]);
 			playerScore.put((int)buf[1],score);
 		}
 	}
 
-	// Show error message about game being cancelled and return to main screen.
+	/**
+	 * Show error message about game being cancelled and return to main screen.
+	 */
 	void showGameError() {
 		BaseGameUtils.makeSimpleDialog(this, "error");
 	}
 
+	/**
+	 * Called when room has been created
+	 * @param statusCode
+	 * @param room
+	 */
 	@Override
 	public void onRoomCreated(int statusCode, Room room) {
 		if (statusCode != GamesStatusCodes.STATUS_OK) {
@@ -437,6 +505,11 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	}
 
+	/**
+	 * Called when room is fully connected.
+	 * @param statusCode
+	 * @param room
+	 */
 	@Override
 	public void onRoomConnected(int statusCode, Room room) {
 		if (statusCode != GamesStatusCodes.STATUS_OK) {
@@ -450,6 +523,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Returen ableToStart flag
+	 * @return
+	 */
 	public boolean getAbleToStart() {
 		return ableToStart;
 	}
@@ -484,6 +561,11 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		updateRoom(room);
 	}
 
+	/**
+	 * Called when we are connected to the room. We're not ready to play yet! (maybe not everybody
+	 * is connected yet).
+	 * @param room
+	 */
 	@Override
 	public void onConnectedToRoom(Room room) {
 		mParticipants = room.getParticipants();
@@ -534,15 +616,20 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Update room situation
+	 * @param room
+	 */
 	void updateRoom(Room room) {
 		if (room != null) {
 			mParticipants = room.getParticipants();
 		}
-//		if (mParticipants!=null){
-//			me=room.getParticipant(mMyId);
-//		}
 	}
 
+	/**
+	 * Send unreliable messages
+	 * @param mMsgBuf
+	 */
 	public void broadcastMsg(byte[] mMsgBuf) {
 		if (mParticipants != null) {
 			for (Participant p : mParticipants) {
@@ -555,6 +642,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	}
 
+	/**
+	 * Send reliable messages
+	 * @param mMsgBuf
+	 */
 	public void broadcastReliableMsg(byte[] mMsgBuf) {
 		if (mParticipants != null) {
 			for (Participant p : mParticipants) {
@@ -571,14 +662,28 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		this.destroy();
 	}
 
+	/**
+	 * Reture player's unique ID
+	 * @return
+	 */
 	public int getMyID() {
 		return myId;
 	}
 
+	/**
+	 * Return certain player's position based on the id
+	 * @param id
+	 * @return
+	 */
 	public int[] getPlayerPosition(int id) {
 		return playerPositions.get(id);
 	}
 
+	/**
+	 * Return certain player's status based on the id
+	 * @param id
+	 * @return
+	 */
 	public String getPlayerStatus(int id) {
 		return playerStatus.get(id);
 	}
@@ -652,6 +757,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Return a copy of current mine map and clear the original one
+	 * @return
+	 */
 	public ArrayList<int[]> getMinePositionAndClear() {
 		synchronized (minePosition) {
 			ArrayList<int[]> tempArray = new ArrayList<>(minePosition);
@@ -660,6 +769,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Return whether there is new information of mines need to handle or not
+	 * @return
+	 */
 	public boolean mineIsEmpty() {
 		synchronized (minePosition) {
 			return minePosition.isEmpty();
@@ -720,10 +833,19 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		}
 	}
 
+	/**
+	 * Return the room size
+	 * @return
+	 */
 	public int getRoomSize(){
 		return mParticipants.size();
 	}
 
+	/**
+	 * Return certain player's score based on the id
+	 * @param id
+	 * @return
+	 */
 	public int getPlayerScore(int id){
 		synchronized (playerScore){
 			if (playerScore.containsKey(id)){
@@ -733,6 +855,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		return 0;
 	}
 
+	/**
+	 * Add in player's own score
+	 * @param score
+	 */
 	public void putPlayerScore(int score){
 		synchronized (playerScore){
 			playerScore.put(getMyID(),score);
