@@ -27,10 +27,11 @@ import com.google.example.games.basegameutils.BaseGameUtils;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AndroidLauncher extends AndroidApplication implements PlayServices,
 		RealTimeMessageReceivedListener, RoomStatusUpdateListener, RoomUpdateListener
@@ -91,12 +92,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	//Variables for coins
 	Map<Integer, int[]> unspawnedCoinPositions = new HashMap<>();
 	int unspawnedIndex = -128; //lowest value of a byte
-	int numOfCoinsToSpawn = 0;
+	AtomicInteger numOfCoinsToSpawn = new AtomicInteger(0);
 	int[] unspawnedGetIndexArray = {-128, -64, 0, 64}; //player0 mines will be from -128 to -65, p1 -64 to -1, p2 0 to 63, p3 64 to 127
-	Object numOfCoinsToSpawnLock = new Object();
-
-	int collectedIndex = 0;
-	int numOfCoinsToRemove = 0;
+	ConcurrentLinkedQueue<Integer> collectedIndex = new ConcurrentLinkedQueue<>();
+	AtomicInteger numOfCoinsToRemove = new AtomicInteger(0);
 
 	@Override
 	public int getUnspawnedIndex() {
@@ -111,8 +110,8 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 	@Override
 
 	public void putMyCoinInHashmap(int player_id, int n, int amount, int index) {
+		int[] coinInfo = {player_id, n, amount, index};
 		synchronized (unspawnedCoinPositions){
-			int[] coinInfo = {player_id, n, amount, index};
 			unspawnedCoinPositions.put(index, coinInfo);
 		}
 	}
@@ -121,13 +120,10 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 
 	@Override
 	public void putOtherPlayerCoinInHashmap(int player_id, int n, int amount, int index) {
+		int[] coinInfo = {player_id, n, amount, index};
 		synchronized (unspawnedCoinPositions){
-			int[] coinInfo = {player_id, n, amount, index};
 			unspawnedCoinPositions.put(index, coinInfo);
-			synchronized (numOfCoinsToSpawnLock){
-				numOfCoinsToSpawn++;
-				Log.d(TAG, "numOfCoinsToSpawn incremented to: " + numOfCoinsToSpawn);
-			}
+			numOfCoinsToSpawn.incrementAndGet();
 		}
 	}
 
@@ -366,12 +362,12 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 			int id = buf[1];
 			playerStatus.put(id, String.valueOf((char) buf[2]));
 		}else if (buf[0]=='c'){ //coin collected by other player , format of msg {'c', index}
-			collectedIndex = buf[1]; //index of coin to be removed on this device
-			numOfCoinsToRemove++;
+			collectedIndex.add((int) buf[1]); //index of coin to be removed on this device
+			numOfCoinsToRemove.incrementAndGet();
 
 		} else if (buf[0] == 'C') { //coin spawned by other player
 			receiveCoinSpawnMsg(buf);
-			Log.wtf(TAG, "recv coin spawn msg from player: "+buf[1]+" n: "+buf[2]);
+			//Log.wtf(TAG, "recv coin spawn msg from player: "+buf[1]+" n: "+buf[2]);
 
 		} else if (buf[0] == 'M') {
 			int[] mineValue = new int[7];
@@ -595,44 +591,33 @@ public class AndroidLauncher extends AndroidApplication implements PlayServices,
 				if(unspawnedCoinPositions.containsKey(unspawnedGetIndexArray[i]) && myId!=i) { //need to extract coin index from hashmap
 					int[] retVal = unspawnedCoinPositions.get(unspawnedGetIndexArray[i]); //retVal = {playerID, n, amount, index}
 					unspawnedGetIndexArray[i]++;
-					synchronized (numOfCoinsToSpawnLock) {
-						numOfCoinsToSpawn--;
-					}
-
-					Log.wtf("TAG", "Show content of retval: " + Arrays.toString(retVal));
+					numOfCoinsToSpawn.decrementAndGet();
+					//Log.wtf("TAG", "Show content of retval: " + Arrays.toString(retVal));
 					return retVal;
 				}
-
 			}
-
 			return null;
-
 		}
-
 	}
 
 	@Override
 	public void decrementCoinsToRemove() {
-		numOfCoinsToRemove--;
+		numOfCoinsToRemove.decrementAndGet();
 	}
 
 	@Override
-	public int numOfCoinsToRemove() {
+	public AtomicInteger numOfCoinsToRemove() {
 		return numOfCoinsToRemove;
 	}
 
 	@Override
-	public int numOfNewCoinsLeftToSpawn() {
-		synchronized (numOfCoinsToSpawnLock){
-			//Log.d(TAG, "return numOfCoinsToSpawn: " + numOfCoinsToSpawn);
-			return numOfCoinsToSpawn;
-		}
-
+	public AtomicInteger numOfNewCoinsLeftToSpawn() {
+		return numOfCoinsToSpawn;
 	}
 
 	@Override
 	public int getCoinToRemoveIndex() {
-		return collectedIndex;
+		return collectedIndex.poll(); //Retrieves and removes the head of this queue, or returns null if this queue is empty.
 	}
 
 	public void receiveCoinSpawnMsg(byte[] mMsgBuf) {

@@ -8,6 +8,6 @@ import com.shiping.gametest.TechiesWorld;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		new LwjglApplication(new TechiesWorld(), config);
+		//new LwjglApplication(new TechiesWorld(), config);
 	}
 }
