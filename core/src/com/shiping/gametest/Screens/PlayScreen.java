@@ -42,7 +42,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by Infinity on 1/3/16.
  *
- * This class represents everything that the Player sees on his/her own screen.
+ * This class represents everything that the player sees on his/her own screen.
+ * It draws the map and creates the Box2D world for collision handling.
+ * It calls updates to the Player, Hud, TouchPadControl, Mines, Coins classes, and draws their textures onto the screen.
+ *
+ * Provides the mechanism to randomly spawn coins over the map throughout the duration of game.
+ * Provides methods to send messages to other players in the event of a coin or mine spawn/removal.
  *
  */
 public class PlayScreen implements Screen {

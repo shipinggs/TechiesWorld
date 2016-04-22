@@ -17,10 +17,12 @@ import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.ItemDef;
 import com.shiping.gametest.TechiesWorld;
 
-
-
 /**
- * Created by shiping on 2/3/16.
+ * The Player class maintains the state of the player and determines which texture is to be drawn on the screen for that state.
+ * It also maintains the amount of gold that the player has.
+ *
+ * This class provides methods and procedures to send update messages at each update cycle to other players, telling them
+ * of this player's position on the screen.
  */
 
 public class Player extends Sprite {
@@ -40,7 +42,6 @@ public class Player extends Sprite {
     private Animation playerRespawn;
 
     private float stateTimer;
-    private boolean runGrowAnimation;
     private boolean playerIsDead;
     private boolean playerIsRespawning;
 
@@ -172,11 +173,6 @@ public class Player extends Sprite {
 
     public void addGold(Coin coin) {
         gold += coin.getAmount();
-    }
-
-    public void minusGold(int amount) {
-        if (gold - amount >= 0) gold -= amount;
-        else gold = 0;
     }
 
     public int getGoldAmount() {

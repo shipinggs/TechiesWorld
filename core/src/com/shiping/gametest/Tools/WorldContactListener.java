@@ -8,14 +8,13 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.shiping.gametest.Sprites.Items.Coin;
 import com.shiping.gametest.Sprites.Items.Mine;
 import com.shiping.gametest.Sprites.Player;
-import com.shiping.gametest.Sprites.TileObjects.InteractiveTileObject;
 import com.shiping.gametest.Sprites.Tutorial.TutorialCoin;
 import com.shiping.gametest.Sprites.Tutorial.TutorialMine;
 import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 2/3/16.
+ * All collision handling can be found here!
  */
 public class WorldContactListener implements ContactListener {
     @Override

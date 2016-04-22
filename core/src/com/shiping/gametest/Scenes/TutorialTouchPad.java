@@ -26,8 +26,8 @@ import com.shiping.gametest.TechiesWorld;
 /**
  * Created by Infinity on 1/4/16.
  *
- * This class represents the Controller overlay.
- * It provides the player with a 'joystick' and a button to lay mines.
+ * The TutorialTouchPad is similar to TouchPadControl but has an
+ * additional 'Back' button to the menu screen.
  */
 public class TutorialTouchPad implements Disposable {
     private Viewport viewport;
