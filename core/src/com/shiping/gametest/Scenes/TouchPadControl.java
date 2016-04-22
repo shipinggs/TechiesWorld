@@ -145,6 +145,15 @@ public class TouchPadControl implements Disposable {
 
     }
 
+    /**
+     *  This allows the PlayScreen to know if the lay-mine button is pressed.
+     *  It is called at every update cycle of the PlayScreen.
+     *
+     *  @return temp    Boolean value of whether lay-mine button is pressed
+     *                  Returns 'false' if button not pressed.
+     *                  Returns 'true' if pressed, and immediately resets minePressed to 'false' so that only one mine is laid.
+     *
+     */
     public boolean isMinePressed() {
         boolean temp = minePressed;
         minePressed = false;
@@ -155,7 +164,12 @@ public class TouchPadControl implements Disposable {
         stage.draw();
     }
 
-    //Returns a Vector2 indicating the linear velocity to give the Player's b2body
+    /**
+     *  This is the defining method of controlling the player's movement.
+     *  It gives the player a velocity that is proportional to the joystick's displacement from the center of the circle.
+     *
+     *  @return Vector2 linear velocity to give the Player's b2body
+     */
     public Vector2 getVelocityVector() {
         return new Vector2(touchpad.getKnobPercentX()*0.7f, touchpad.getKnobPercentY()*0.7f);
     }

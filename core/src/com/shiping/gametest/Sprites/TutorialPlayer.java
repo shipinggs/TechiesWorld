@@ -13,14 +13,12 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.Screens.TutorialScreen;
-import com.shiping.gametest.Sprites.Items.Coin;
-import com.shiping.gametest.Sprites.Items.ItemDef;
 import com.shiping.gametest.Sprites.Tutorial.TutorialCoin;
 import com.shiping.gametest.Sprites.Tutorial.TutorialItemDef;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 19/4/16.
+ * TutorialPlayer is similar to Player, but without the methods and mechanisms to update other players' of this player's position.
  */
 public class TutorialPlayer extends Sprite {
     private int playerID;
@@ -39,7 +37,6 @@ public class TutorialPlayer extends Sprite {
     private Animation playerRespawn;
 
     private float stateTimer;
-    private boolean runGrowAnimation;
     private boolean playerIsDead;
     private boolean playerIsRespawning;
 
@@ -153,11 +150,6 @@ public class TutorialPlayer extends Sprite {
     public void addGold(TutorialCoin coin) {
         pickedCoin = true;
         gold += coin.getAmount();
-    }
-
-    public void minusGold(int amount) {
-        if (gold - amount >= 0) gold -= amount;
-        else gold = 0;
     }
 
     public int getGoldAmount() {

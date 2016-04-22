@@ -9,8 +9,6 @@ import com.badlogic.gdx.utils.Array;
 import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.TechiesWorld;
 
-import java.awt.font.TextHitInfo;
-
 /**
  * Created by shiping on 8/4/16.
  *

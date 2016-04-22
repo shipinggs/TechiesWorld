@@ -13,29 +13,16 @@ import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 28/3/16.
+ * The Coin class extends the Item class which in turn extends the Sprite class.
+ * This is essentially for rendering the coin's Box2D and drawing the coin's sprite on the screen.
+ *
+ * It provides a method to handle collisions with players.
  */
 public class Coin extends Item {
     private int amount;
     private Animation textureAnimation;
     private float stateTimer;
     private boolean setToDestroy;
-
-    public Coin(PlayScreen screen, float x, float y, int amount) {
-        super(screen, x, y);
-        this.amount = amount;
-        stateTimer = 0;
-
-        Array<TextureRegion> frames = new Array<TextureRegion>();
-
-        // add coin bubbly animation
-        for (int i = 0; i < 6; i++) {
-            frames.add(new TextureRegion(new Texture("PNGPack.png"), i*64, 70, 64, 64 ));
-        }
-
-        textureAnimation = new Animation(0.2f, frames);
-        setRegion(textureAnimation.getKeyFrame(stateTimer, true));
-    }
 
     public Coin(PlayScreen screen, float x, float y, int amount, int index) {
         super(screen, x, y, index);
@@ -75,6 +62,14 @@ public class Coin extends Item {
     public int getAmount() {
         return amount;
     }
+
+    /**
+     * The contact() method indicates to the class that the sprite is to be destroyed in the next update cycle.
+     * It also sends an update message to other players telling them the coin has been picked up and
+     * should be destroyed on their respective screens as well.
+     *
+     * @param player    The player to add gold to.
+     */
 
     @Override
     public void contact(Player player) {

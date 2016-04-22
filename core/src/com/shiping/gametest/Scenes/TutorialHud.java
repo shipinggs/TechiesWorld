@@ -15,7 +15,8 @@ import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 19/4/16.
+ * This is a HEADS-UP DISPLAY specifically for the Tutorial
+ * It takes in a TutorialPlayer as input instead of a Player.
  */
 public class TutorialHud implements Disposable {
     public Stage stage;

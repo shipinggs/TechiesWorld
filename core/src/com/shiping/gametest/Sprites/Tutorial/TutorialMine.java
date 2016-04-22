@@ -14,7 +14,9 @@ import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 19/4/16.
+ * This TutorialMine class is similar to the Mine class, but is without the method to
+ * broadcast update messages to other players in the event the mine has been set off.
+ *
  */
 public class TutorialMine extends TutorialItem {
     private int playerID; // put by which player

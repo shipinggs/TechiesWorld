@@ -17,7 +17,10 @@ import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 1/3/16.
+ *
+ * This is the HEADS-UP DISPLAY for players when on the PlayScreen.
+ * It shows players their current amount of gold and the amount of time left.
+ *
  */
 public class Hud implements Disposable {
     public Stage stage;
@@ -37,9 +40,17 @@ public class Hud implements Disposable {
     Label timeLabel;
     Label goldLabel;
 
+    /**
+     *  Constructor for the HUD.
+     *
+     *  @param sb       This is meant for drawing the stage.
+     *  @param player   The player whose gold amount will be shown on the HUD. This will typically be the player of the device.
+     *  @param game     To be able to set the screen to the EndScreen.
+     *  */
+
     public Hud (SpriteBatch sb, Player player, TechiesWorld game) {
         this.player = player;
-        this.game=game;
+        this.game = game;
         worldTimer = 140;
         timeCount = 0;
         score = player.getGoldAmount();

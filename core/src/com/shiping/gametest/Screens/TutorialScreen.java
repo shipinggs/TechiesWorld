@@ -33,7 +33,9 @@ import com.shiping.gametest.Tools.WorldContactListener;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Created by shiping on 19/4/16.
+ * TutorialScreen is similar to PlayScreen but without the mechanism to randomly spawn coins on the map.
+ * It is also without the methods to send update messages to other players,
+ * as this TutorialScreen is only meant for the device's player.
  */
 public class TutorialScreen implements Screen {
     private TechiesWorld game;
