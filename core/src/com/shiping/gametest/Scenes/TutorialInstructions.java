@@ -16,7 +16,7 @@ import com.shiping.gametest.Screens.TutorialScreen;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 19/4/16.
+ * This class is for managing the stages of the tutorial and displaying the appropriate instructions on the screen.
  */
 public class TutorialInstructions implements Disposable {
     private TutorialScreen screen;

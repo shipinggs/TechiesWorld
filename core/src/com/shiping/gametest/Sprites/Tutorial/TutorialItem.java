@@ -2,11 +2,9 @@ package com.shiping.gametest.Sprites.Tutorial;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.shiping.gametest.Screens.TutorialScreen;
-import com.shiping.gametest.Sprites.Player;
 import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
@@ -16,7 +14,6 @@ import com.shiping.gametest.TechiesWorld;
 public abstract class TutorialItem extends Sprite {
     protected TutorialScreen screen;
     protected World world;
-    protected Vector2 velocity;
     protected boolean toDestroy;
     public boolean destroyed;
     protected Body body;
@@ -51,13 +48,5 @@ public abstract class TutorialItem extends Sprite {
 
     public void destroy() {
         toDestroy = true;
-    }
-
-    public boolean isDestroyed(){
-        return destroyed;
-    }
-
-    public boolean isToDestroy(){
-        return toDestroy;
     }
 }

@@ -14,7 +14,12 @@ import com.shiping.gametest.Screens.PlayScreen;
 import com.shiping.gametest.Sprites.Player;
 
 /**
- * Created by shiping on 2/3/16.
+ * The Mine class extends Item class which in turn extends the Sprite class.
+ * It creates a Box2D body for the Mine item and draws the appropriate texture for the body,
+ * depending on the state the mine is in.
+ *
+ * It provides the mechanism to allow a player's own mines to be visible and not dangerous,
+ * while making other players' mines invisible after arming and exploding upon contact.
  */
 public class Mine extends Item {
 
@@ -60,6 +65,12 @@ public class Mine extends Item {
         setRegion(placedTexture);
     }
 
+    /**
+     *
+     * @param dt    Necessary for returning the right keyframes of an Animation
+     *
+     * @return The TextureRegion to be drawn at that update cycle.
+     */
 
     public TextureRegion getFrame(float dt) {
         TextureRegion region;
@@ -117,6 +128,12 @@ public class Mine extends Item {
         currentState = State.values()[index];
     }
 
+    /**
+     * This method changes the State to the Exploding state and
+     * sends an update message to other players that this mine has been contacted.
+     *
+     * @param player To set the player to die in the next update cycle.
+     */
     @Override
     public void contact(Player player) {
         if (currentState == State.ARMED || currentState == State.HIDDEN) {
@@ -130,6 +147,13 @@ public class Mine extends Item {
         }
     }
 
+    /**
+     * This method provides the mechanism to allow different collision handlers for own mines and others' mines.
+     * It sets the mine to different categoryBits filters for own mines and others' mines.
+     *
+     * It also provides the mechanism to allow the different collision handling for mines of different States.
+     * Only ARMED(others' mines) and HIDDEN mines will be set off upon contact with players.
+     */
 
     @Override
     public void defineItem() {

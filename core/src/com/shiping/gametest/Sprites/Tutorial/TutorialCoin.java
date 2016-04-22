@@ -13,6 +13,10 @@ import com.shiping.gametest.Sprites.TutorialPlayer;
 import com.shiping.gametest.TechiesWorld;
 
 
+/**
+ * The TutorialCoin class is similar to the Coin class, but takes in a TutorialScreen as input.
+ * This class is also without the method calls to broadcast update messages to other players in the event the coin is picked up.
+ */
 public class TutorialCoin extends TutorialItem {
     private int amount;
     private Animation textureAnimation;

@@ -1,10 +1,8 @@
 package com.shiping.gametest.Tools;
 
 import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -14,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.shiping.gametest.TechiesWorld;
 
 /**
- * Created by shiping on 2/3/16.
+ * This class is responsible for drawing the Box2D bodies as walls of the map.
  */
 public class B2WorldCreator {
     public B2WorldCreator(World world, TiledMap map) {
