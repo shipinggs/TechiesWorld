@@ -16,7 +16,7 @@ import com.shiping.gametest.TechiesWorld;
 /**
  * Created by G751-4314 on 19/4/2016.
  */
-public class Hud2 implements Disposable {
+public class EndScreenScores implements Disposable {
     public Stage stage;
     // We want a separate viewport for our hud as it should stay locked on screen
     private Viewport viewport;
@@ -39,7 +39,7 @@ public class Hud2 implements Disposable {
     int score2;
     int score3;
 
-    public Hud2(SpriteBatch spriteBatch){
+    public EndScreenScores(SpriteBatch spriteBatch){
         hudcam = new OrthographicCamera();
         viewport = new FitViewport(TechiesWorld.V_WIDTH, TechiesWorld.V_HEIGHT, hudcam);
         stage = new Stage(viewport, spriteBatch);

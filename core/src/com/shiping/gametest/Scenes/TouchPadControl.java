@@ -40,7 +40,7 @@ public class TouchPadControl implements Disposable {
     private Drawable touchBackground;
     private Drawable touchKnob;
 
-    private boolean minePressed, mineTouchedDown;
+    private boolean minePressed;
 
     private Texture texturePack = new Texture("Button(128x128).png");
     private Texture texturePack2 = new Texture("PNGPack.png");
@@ -59,7 +59,6 @@ public class TouchPadControl implements Disposable {
         cam = new OrthographicCamera();
         viewport = new FitViewport(TechiesWorld.V_WIDTH, TechiesWorld.V_HEIGHT, cam);
         batch = sb;
-        mineTouchedDown = false;
 
         stateTimer = 0;
         currentState = previousState = State.READY;

@@ -16,7 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.shiping.gametest.Scenes.Hud2;
+import com.shiping.gametest.Scenes.EndScreenScores;
 import com.shiping.gametest.TechiesWorld;
 
 /**
@@ -30,7 +30,7 @@ public class EndScreen implements Screen {
     private Stage stage; //** stage holds the Button **//
 
 
-    private Hud2 hud2;
+    private EndScreenScores endScreenScores;
 
     private BitmapFont font;
     private Texture calibriFontTexture;
@@ -49,7 +49,7 @@ public class EndScreen implements Screen {
         stage.clear();
         Gdx.input.setInputProcessor(stage); //** stage is responsive **//
 
-        hud2=new Hud2(game.batch);
+        endScreenScores =new EndScreenScores(game.batch);
 
 
         //font
@@ -101,7 +101,7 @@ public class EndScreen implements Screen {
 
     }
     public void update(float delta){
-        hud2.update(delta);
+        endScreenScores.update(delta);
     }
 
 
@@ -115,7 +115,7 @@ public class EndScreen implements Screen {
 
         batch.setProjectionMatrix(camera.combined);
         stage.draw();
-        hud2.stage.draw();
+        endScreenScores.stage.draw();
         batch.begin();
 
         batch.end();
